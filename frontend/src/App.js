@@ -104,9 +104,9 @@ function App() {
       </header>
       <main>
         <section className="description">
-          <h2>Was macht diese Seite?</h2>
+          <h2>Was macht diese App?</h2>
           <p>
-            Diese Seite erstellt aus einer <strong>Termine (TAB).txt</strong> Datei ein PDF mit Etiketten zum Aufkleben auf die Schlüsselanhänger. Zu nutzen ist hier Avery Zweckform "49x25". Einfach über unseren TKP Planer auf Exportieren - Termine (TAB getrennt) klicken und die heruntergeladene Datei hier hochladen.
+          Diese Anwendung generiert aus einer Datei im Format Termine (TAB).txt ein PDF-Dokument mit Etiketten, die auf Schlüsselanhänger aufgeklebt werden können. Für diesen Zweck verwenden Sie bitte Avery Zweckform Typ 3657 “49x25”. Um die Datei zu erstellen, wählen Sie in unserem TKP Planer die Option “Exportieren - Termine (TAB getrennt)” und laden Sie die heruntergeladene Datei hier hoch.
           </p>
         </section>
         <section className="upload-section">
@@ -124,7 +124,7 @@ function App() {
               {file ? `Selected file: ${file.name}` : 'Ziehen Sie die TXT-Datei hierher oder klicken Sie, um sie hochzuladen'}
               <input type="file" name="file" id="file-input" style={{ display: 'none' }} onChange={handleFileChange} />
             </div>
-            <button type="submit">Hochladen</button>
+            <button type="submit">Etiketten erstellen</button>
           </form>
         </section>
       </main>
