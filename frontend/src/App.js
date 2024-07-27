@@ -61,7 +61,7 @@ function App() {
         </section>
       </main>
       <footer>
-        <p>Entwickelt von [Christian Strube] &copy; 2024</p>
+        <p>Entwickelt von Christian Strube &copy; 2024</p>
       </footer>
     </div>
   );

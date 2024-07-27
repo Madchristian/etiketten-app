@@ -2,8 +2,12 @@ services:
   backend:
     build:
       context: ./backend
+    volumes:
+      - ./backend/app:/app/app
     ports:
       - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
 
   frontend:
     build:
