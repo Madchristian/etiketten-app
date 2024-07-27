@@ -45,6 +45,7 @@ def create_labels(dataframe, output):
 
     # NaN-Werte durch leere Strings ersetzen und alle Werte in Strings konvertieren
     dataframe = dataframe.fillna('').astype(str)
+    dataframe['Auftragsnummer'] = dataframe['Auftragsnummer'].astype(str).str.split('.').str[0]  # Entferne '.0' von Auftragsnummern
 
     # PDF-Dokument erstellen
     c = canvas.Canvas(output, pagesize=A4)
@@ -100,17 +101,24 @@ def create_labels(dataframe, output):
         text_y -= 3 * mm
         c.drawString(text_x, text_y, f"{row['Annahmedatum_Uhrzeit1']} - {row['Fertigstellungstermin']}")
 
+        # Rechteck um das Kennzeichen zeichnen und rechtsbündige Auftragsnummer
         c.setFont("Helvetica-Bold", 10)
-        text_y -= 4 * mm  # Text näher an das vorherige Element rücken
-        c.drawString(text_x, text_y, row['Amtl. Kennzeichen'])
+        kennzeichen = row['Amtl. Kennzeichen']
+        auftragsnummer = f"AU{row['Auftragsnummer']}"
+        kennzeichen_width = c.stringWidth(kennzeichen, "Helvetica-Bold", 10)
+        auftragsnummer_width = c.stringWidth(auftragsnummer, "Helvetica-Bold", 10)
+        space_between = label_width - (kennzeichen_width + auftragsnummer_width + 4 * mm)
+
+        c.drawString(text_x, text_y - 5 * mm, kennzeichen)
+        c.drawRightString(x + label_width - 2 * mm, text_y - 5 * mm, auftragsnummer)
 
         # Linie unter dem Kennzeichen zeichnen
         c.setLineWidth(0.5)
-        c.line(text_x, text_y - 1 * mm, x + label_width - 2 * mm, text_y - 1 * mm)  # Linie näher an das Kennzeichen rücken
+        c.line(text_x, text_y - 6 * mm, x + label_width - 2 * mm, text_y - 6 * mm)  # Linie näher an das Kennzeichen rücken
 
         # Notiztext umbrochen und auf 200 Zeichen begrenzt
         c.setFont("Helvetica", 7)
-        text_y -= 4 * mm  # Text näher an die Linie rücken
+        text_y -= 8 * mm  # Text näher an die Linie rücken
         notiz = row['Notizen_Serviceberater'][:200]  # Begrenze auf 200 Zeichen
         text_y = wrap_text(c, notiz, text_x, text_y, label_width - 4 * mm, line_height=7, max_lines=5)
 
