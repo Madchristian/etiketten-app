@@ -3,58 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Senger Etiketten-App</title>
+    <title>Etiketten-App</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header>
-      <img src="logo.png" alt="Firmenlogo" class="logo" />
-      <h1>Etiketten-App</h1>
-    </header>
-    <main>
-      <section class="description">
-        <h2>Was macht diese Seite?</h2>
-        <p>
-          Diese Seite erstellt aus einer <strong>Termine (TAB).txt</strong> Datei ein PDF mit Etiketten zum Aufkleben auf die Schlüsselanhänger. Zu nutzen ist hier Avery Zweckform "49x25". Einfach über unseren TKP Planer auf Exportieren - Termine (TAB getrennt) klicken und die heruntergeladene Datei hier hochladen.
-        </p>
-      </section>
-      <section class="upload-section">
-        <h2>CSV-Datei hochladen</h2>
-        <form id="upload-form" method="post" enctype="multipart/form-data">
-          <div class="dropzone" id="dropzone">
-            Ziehen Sie die .txt-Datei hierher oder klicken Sie, um sie hochzuladen
-            <input type="file" name="file" id="file-input" style="display: none;" />
-          </div>
-          <button type="submit">Hochladen</button>
-        </form>
-      </section>
-    </main>
-    <footer>
-      <p>Entwickelt von Christian Strube &copy; 2024</p>
-    </footer>
-    <script>
-      const dropzone = document.getElementById('dropzone');
-      const fileInput = document.getElementById('file-input');
-      const form = document.getElementById('upload-form');
-
-      dropzone.addEventListener('click', () => fileInput.click());
-
-      dropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropzone.classList.add('dragover');
-      });
-
-      dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-
-      dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-          fileInput.files = files;
-        }
-      });
-    </script>
+    <div id="root"></div>
   </body>
 </html>

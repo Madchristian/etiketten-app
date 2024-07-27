@@ -39,9 +39,7 @@ function App() {
         <section className="description">
           <h2>Was macht diese Seite?</h2>
           <p>
-            Diese Seite ermöglicht es Ihnen, CSV-Dateien hochzuladen und Etiketten mit
-            den relevanten Informationen zu generieren. Die Etiketten enthalten
-            Auftragsnummern, Annahmedaten, Notizen, Kundennamen und Kennzeichen.
+            Diese Seite erstellt aus einer <strong>Termine (TAB).txt</strong> Datei ein PDF mit Etiketten zum Aufkleben auf die Schlüsselanhänger. Zu nutzen ist hier Avery Zweckform "49x25". Einfach über unseren TKP Planer auf Exportieren - Termine (TAB getrennt) klicken und die heruntergeladene Datei hier hochladen.
           </p>
         </section>
         <section className="upload-section">
@@ -63,7 +61,7 @@ function App() {
         </section>
       </main>
       <footer>
-        <p>Entwickelt von [Dein Name] &copy; 2024</p>
+        <p>Entwickelt von [Christian Strube] &copy; 2024</p>
       </footer>
     </div>
   );
