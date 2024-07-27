@@ -5,16 +5,30 @@ import './App.css';
 function App() {
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
-    console.log("File selected: ", event.target.files[0]);
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      if (selectedFile.type !== 'text/plain') {
+        setErrorMessage('Nur .txt Dateien sind erlaubt.');
+        return;
+      }
+      if (selectedFile.size > 300 * 1024) {
+        setErrorMessage('Die Datei darf maximal 300 KB groß sein.');
+        return;
+      }
+      setFile(selectedFile);
+      setErrorMessage('');
+      console.log("File selected: ", selectedFile);
+    }
   };
 
   const handleUpload = async (event) => {
     event.preventDefault();
     if (!file) {
       console.error("No file selected");
+      setErrorMessage('Bitte wählen Sie eine Datei aus.');
       return;
     }
 
@@ -27,14 +41,29 @@ function App() {
         responseType: 'blob',
       });
       console.log("Upload successful:", response);
+
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'Etiketten.pdf';
+      if (contentDisposition) {
+        const matches = contentDisposition.match(/filename="(.+)"/);
+        if (matches.length > 1) {
+          filename = matches[1];
+        }
+      }
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'Etiketten.pdf');
+      link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
+
+      // Reset file input after successful upload
+      setFile(null);
+      document.getElementById('file-input').value = '';
     } catch (error) {
       console.error('Error uploading file:', error);
+      setErrorMessage('Fehler beim Hochladen der Datei.');
     }
   };
 
@@ -52,8 +81,18 @@ function App() {
     setDragging(false);
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      setFile(files[0]);
-      console.log("File dropped: ", files[0]);
+      const selectedFile = files[0];
+      if (selectedFile.type !== 'text/plain') {
+        setErrorMessage('Nur .txt Dateien sind erlaubt.');
+        return;
+      }
+      if (selectedFile.size > 300 * 1024) {
+        setErrorMessage('Die Datei darf maximal 300 KB groß sein.');
+        return;
+      }
+      setFile(selectedFile);
+      setErrorMessage('');
+      console.log("File dropped: ", selectedFile);
     }
   };
 
@@ -72,6 +111,7 @@ function App() {
         </section>
         <section className="upload-section">
           <h2>TXT-Datei hochladen</h2>
+          {errorMessage && <p className="error-message">{errorMessage}</p>}
           <form id="upload-form" method="post" onSubmit={handleUpload}>
             <div 
               className={`dropzone ${dragging ? 'dragging' : ''}`} 

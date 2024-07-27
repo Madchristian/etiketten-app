@@ -7,9 +7,9 @@ import pandas as pd
 
 def map_terminart(terminart):
     mapping = {
-        'R': 'KW',  # Wartet
+        'K': 'KW',  # Wartet
         'H': 'H&B',  # Hol&Bring
-        'K': ''      # Normal
+        'R': ''      # Normal
         # Füge hier weitere Zuordnungen hinzu, falls nötig
     }
     return mapping.get(terminart, '')

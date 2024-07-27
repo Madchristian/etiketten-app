@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
 import pandas as pd
 from app.services.label_service import create_labels
@@ -14,6 +14,14 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
+    # Prüfen, ob die Datei eine .txt-Datei ist
+    if not file.filename.endswith('.txt'):
+        raise HTTPException(status_code=400, detail="Nur .txt Dateien sind erlaubt.")
+    
+    # Prüfen, ob die Datei kleiner als 300 KB ist
+    if file.size > 300 * 1024:
+        raise HTTPException(status_code=400, detail="Die Datei darf maximal 300 KB groß sein.")
+
     # Generiere eine eindeutige ID für diese Datei
     file_id = str(uuid4())
     file_extension = os.path.splitext(file.filename)[1]
@@ -45,10 +53,9 @@ async def upload_file(file: UploadFile = File(...)):
 
     # Aktuelles Datum für den Dateinamen
     current_date = datetime.now().strftime("%Y-%m-%d")
-    filename = f"{current_date}_Terminetiketten.pdf"
 
     # Verwende StreamingResponse, um die PDF-Datei zurückzugeben
     headers = {
-        'Content-Disposition': f'attachment; filename="{filename}"'
+        'Content-Disposition': f'attachment; filename="{current_date}_Terminetiketten.pdf"'
     }
     return StreamingResponse(output, media_type="application/pdf", headers=headers)
