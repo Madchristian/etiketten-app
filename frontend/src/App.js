@@ -23,7 +23,7 @@ function App() {
 
     try {
       console.log("Uploading file:", file);
-      const response = await axios.post('http://:8000/upload/', formData, {
+      const response = await axios.post('http://backend:8000/upload/', formData, {
         responseType: 'blob',
       });
       console.log("Upload successful:", response);
