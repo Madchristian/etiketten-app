@@ -1,15 +1,84 @@
-.App {
-    text-align: center;
-    margin: 20px;
-  }
-  
-  .App input {
-    margin: 10px;
-  }
-  
-  .App button {
-    margin: 10px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff;
+}
+
+header {
+  background-color: #eb0033;
+  color: white;
+  padding: 1rem;
+  text-align: center;
+  margin: 0;
+}
+
+header .logo {
+  max-width: 100px;
+  display: block;
+  margin: 0 auto 10px;
+}
+
+main {
+  flex: 1;
+  padding: 2rem;
+  background-color: #f4f4f9;
+  margin: 0;
+}
+
+.description, .upload-section {
+  background: white;
+  padding: 2rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.description h2, .upload-section h2 {
+  color: #424b54;
+}
+
+.upload-section {
+  text-align: center;
+}
+
+.dropzone {
+  border: 2px dashed #424b54;
+  border-radius: 5px;
+  background: #d2d6da;
+  padding: 50px;
+  text-align: center;
+  font: 20pt bold;
+  color: #424b54;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dropzone.dragging {
+  background: #eb0033;
+  color: white;
+}
+
+button {
+  background-color: #eb0033;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+button:hover {
+  background-color: #d2002b;
+}
+
+footer {
+  background-color: #424b54;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
 }

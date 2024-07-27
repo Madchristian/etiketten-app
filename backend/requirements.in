@@ -3,3 +3,4 @@ uvicorn
 pandas
 reportlab
 qrcode[pil]
+fastapi-cors
