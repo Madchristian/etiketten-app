@@ -37,7 +37,7 @@ function App() {
       </header>
       <main>
         <section className="description">
-          <h2>Was macht diese Seite?</h2>
+          <h2>Was macht diese Seite?2</h2>
           <p>
             Diese Seite erstellt aus einer <strong>Termine (TAB).txt</strong> Datei ein PDF mit Etiketten zum Aufkleben auf die Schlüsselanhänger. Zu nutzen ist hier Avery Zweckform "49x25". Einfach über unseren TKP Planer auf Exportieren - Termine (TAB getrennt) klicken und die heruntergeladene Datei hier hochladen.
           </p>
