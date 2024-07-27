@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import upload_router  # Importiere den Router, wo du deinen APIRouter definiert hast
+from app.routes.labels import router as labels_router  # Importiere den Router korrekt
 
 app = FastAPI()
 
@@ -8,6 +8,9 @@ app = FastAPI()
 origins = [
     "http://localhost",
     "http://localhost:3000",
+    "http://backend:8000",
+    "https://etiketten.cstrube.de",
+    "https://etiketten.cstrube.de/upload/",
     # Füge weitere erlaubte Origins hier hinzu
 ]
 
@@ -20,4 +23,4 @@ app.add_middleware(
 )
 
 # Router einbinden
-app.include_router(upload_router)
+app.include_router(labels_router)

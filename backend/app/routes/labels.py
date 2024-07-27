@@ -41,3 +41,5 @@ async def upload_file(file: UploadFile = File(...)):
     os.remove(file_location)
 
     return FileResponse(output, filename="Etiketten.pdf", media_type="application/pdf")
+
+__all__ = ["router"]

@@ -2,17 +2,21 @@ services:
   backend:
     build:
       context: ./backend
-    volumes:
-      - ./backend/app:/app/app
     ports:
       - "8000:8000"
-    environment:
-      - PYTHONUNBUFFERED=1
+    networks:
+      - etiketten-netzwerk
 
   frontend:
     build:
       context: ./frontend
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - backend
+    networks:
+      - etiketten-netzwerk
+
+networks:
+  etiketten-netzwerk:
+    driver: bridge
