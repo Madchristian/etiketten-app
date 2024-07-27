@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 import pandas as pd
 from app.services.label_service import create_labels
@@ -11,6 +11,10 @@ router = APIRouter()
 
 UPLOAD_DIR = "files"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+def delete_temp_file(file_location):
+    if os.path.exists(file_location):
+        os.remove(file_location)
 
 @router.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
@@ -27,29 +31,30 @@ async def upload_file(file: UploadFile = File(...)):
     file_extension = os.path.splitext(file.filename)[1]
     file_location = f"{UPLOAD_DIR}/{file_id}{file_extension}"
 
-    # Lese die Datei und speichere sie temporär
-    with open(file_location, "wb+") as file_object:
-        file_object.write(file.file.read())
+    try:
+        # Lese die Datei und speichere sie temporär
+        with open(file_location, "wb+") as file_object:
+            file_object.write(file.file.read())
 
-    # Lese die Datei mit Pandas und wähle die gewünschten Spalten aus
-    columns = [
-        'Auftragsnummer',
-        'Annahmedatum_Uhrzeit1',
-        'Notizen_Serviceberater',
-        'Kundenname',
-        'Fertigstellungstermin',
-        'Terminart',
-        'Amtl. Kennzeichen'
-    ]
-    df = pd.read_csv(file_location, delimiter='\t', usecols=columns)
+        # Lese die Datei mit Pandas und wähle die gewünschten Spalten aus
+        columns = [
+            'Auftragsnummer',
+            'Annahmedatum_Uhrzeit1',
+            'Notizen_Serviceberater',
+            'Kundenname',
+            'Fertigstellungstermin',
+            'Terminart',
+            'Amtl. Kennzeichen'
+        ]
+        df = pd.read_csv(file_location, delimiter='\t', usecols=columns)
 
-    # Erstelle die Labels und speichere sie im BytesIO-Objekt
-    output = BytesIO()
-    create_labels(df, output)
-    output.seek(0)
-
-    # Lösche die temporäre Datei
-    os.remove(file_location)
+        # Erstelle die Labels und speichere sie im BytesIO-Objekt
+        output = BytesIO()
+        create_labels(df, output)
+        output.seek(0)
+    finally:
+        # Lösche die temporäre Datei
+        delete_temp_file(file_location)
 
     # Aktuelles Datum für den Dateinamen
     current_date = datetime.now().strftime("%Y-%m-%d")
