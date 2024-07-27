@@ -4,3 +4,4 @@ pandas
 reportlab
 qrcode[pil]
 fastapi-cors
+python-dotenv

@@ -74,6 +74,7 @@ pydantic==2.8.2
     # via fastapi
 pydantic-core==2.20.1
     # via pydantic
+python-dotenv
 pygments==2.18.0
     # via rich
 pypng==0.20220715.0

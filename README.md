@@ -1,98 +1,73 @@
-# etiketten-app
 # Etiketten-App
 
-Diese Anwendung generiert PDF-Dateien mit Etiketten aus einer hochgeladenen `.txt` Datei. Die Etiketten sind für Avery Zweckform "49x25" geeignet. Benutzer können die `.txt` Datei hochladen, und die App erstellt ein PDF mit den Etiketten zum Ausdrucken und Aufkleben auf Schlüsselanhänger.
+## Beschreibung
 
-## Funktionen
+Diese Anwendung generiert aus einer Datei im Format <strong>Termine (TAB).txt</strong> ein PDF-Dokument mit Etiketten, die auf Schlüsselanhänger aufgeklebt werden können. Für diesen Zweck verwenden Sie bitte Avery Zweckform Typ 3657 "49x25". Um die Datei zu erstellen, wählen Sie in unserem TKP Planer die Option "Exportieren - Termine (TAB getrennt)" und laden Sie die heruntergeladene Datei hier hoch.
 
-- Hochladen einer `.txt` Datei mit Termindaten.
-- Generierung eines PDF mit Etiketten basierend auf den hochgeladenen Daten.
-- Unterstützung für Avery Zweckform 3657 "49x25" Etiketten.
-- Automatische Beschriftung mit Kundendaten, Auftragsnummern und Notizen.
-- Begrenzung der Notizen auf maximal 200 Zeichen und maximal 5 Zeilen.
-- QR-Code-Erzeugung für Auftragsnummern (deaktiviert)
-- Sicherstellung, dass nur .txt Dateien hochgeladen werden können und dass die Dateigröße 300 KB nicht überschreitet.
-- Löschen der hochgeladenen Datei nach der Verarbeitung.
+## Technologie-Stack
 
-## Sicherheitsdetails
+### Frontend
+- **React**: JavaScript-Bibliothek zur Erstellung von Benutzeroberflächen.
+- **Axios**: HTTP-Client zur Kommunikation mit dem Backend.
+- **CSS**: Für das Styling der Anwendung.
 
-- Die Anwendung akzeptiert nur `.txt` Dateien mit einer maximalen Größe von 300 KB.
-- Der Upload und die Verarbeitung der Dateien sind durch einen Try-Finally-Block gesichert, um sicherzustellen, dass temporäre Dateien immer gelöscht werden.
-- Cross-Origin Resource Sharing (CORS) ist konfiguriert, um den Zugriff nur von bestimmten Origins zuzulassen.
-- Die PDF-Datei wird nur an den Benutzer zurückgegeben, der sie hochgeladen hat.
+### Backend
+- **Python**: Programmiersprache zur Implementierung der Logik.
+- **FastAPI**: Web-Framework für den Aufbau von APIs.
+- **Pandas**: Datenanalyse- und Manipulationsbibliothek.
+- **ReportLab**: Bibliothek zur Erstellung von PDF-Dokumenten.
+- **Uvicorn**: ASGI-Server zum Ausführen der FastAPI-Anwendung.
 
-## Anforderungen
+### Containerization
+- **Docker**: Containerplattform zur Bereitstellung der Anwendung.
+- **Docker Compose**: Werkzeug zur Definition und Ausführung mehrerer Docker-Container.
 
-- Node.js und Yarn für das Frontend
-- Python 3.12 und pip für das Backend
-- Docker und Docker Compose zum Hosten der Anwendung
+### Sicherheit
+- **CORS**: Konfiguration, um den Zugriff nur von bestimmten Domains zu erlauben.
+- **File Size Limiter**: Begrenzung der Dateigröße auf 300 KB.
+- **File Type Validator**: Akzeptiert nur .txt-Dateien.
+- **Rate Limiting**: Begrenzung der Anzahl der Uploads, um Missbrauch zu verhindern.
 
-## Installation und Ausführung
+## Setup und Installation
 
-### 1. Klonen des Repositories
+### Voraussetzungen
+- Docker
+- Docker Compose
+- Git
 
-```sh
-git clone https://github.com/DeinBenutzername/etiketten-app.git
-cd etiketten-app
+### Installation
 
-docker-compose up --build
-```
-
-Anpassen der CORS-Einstellungen in `backend/app/main.py`:
-```python
-origins = [
-    "http://localhost",
-    "http://localhost:3000",
-    "https://etiketten.cstrube.de",
-    # Füge weitere erlaubte Origins hier hinzu
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-```
-
-
-Deployment Beispiel mit traefik:
-```yaml
-version: '3.7'
-
-services:
-  frontend:
-    image: etiketten-app-frontend
-    build:
-      context: ./frontend
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`etiketten.cstrube.de`)"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
-    ports:
-      - "3000:3000"
-
-  backend:
-    image: etiketten-app-backend
-    build:
-      context: ./backend
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`etiketten.cstrube.de`) && PathPrefix(`/upload`)"
-      - "traefik.http.services.backend.loadbalancer.server.port=8000"
-    ports:
-      - "8000:8000"
-
-  traefik:
-    image: traefik:v2.4
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--entrypoints.web.address=:80"
-    ports:
-      - "80:80"
-      - "8080:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+1. **Repository klonen**
+    ```sh
+    git clone https://github.com/Madchristian/etiketten-app.git
+    cd etiketten-app
     ```
+
+2. **Umgebungsvariablen konfigurieren**
+    Erstelle eine `.env` Datei im Wurzelverzeichnis und füge die benötigten Umgebungsvariablen hinzu (z.B. für Rate Limiting).
+
+3. **Docker Container starten**
+    ```sh
+    docker-compose up --build
+    ```
+
+4. **Zugriff auf die Anwendung**
+    - **Frontend**: [http://localhost:3000](http://localhost:3000)
+    - **Backend**: [http://localhost:8000](http://localhost:8000)
+
+## Nutzung
+
+1. Navigieren Sie zur Webseite.
+2. Laden Sie die Datei im Format <strong>Termine (TAB).txt</strong> hoch.
+3. Die generierte PDF-Datei wird automatisch heruntergeladen.
+
+## Sicherheit
+
+Der Backend-Service auf Port 8000 ist durch mehrere Maßnahmen geschützt:
+- Akzeptiert nur .txt-Dateien.
+- Maximale Dateigröße von 300 KB.
+- Rate Limiting, um Missbrauch zu verhindern.
+
+## Lizenz
+
+Diese Anwendung ist unter der Apache 2.0-Lizenz veröffentlicht. Siehe die [LICENSE](./LICENSE) Datei für weitere Details.
