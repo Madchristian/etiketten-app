@@ -13,6 +13,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set up Git configuration
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
       - name: Create Pull Request
         id: create_pull_request
         uses: peter-evans/create-pull-request@v4
@@ -23,3 +28,11 @@ jobs:
           title: 'Sync master to main'
           body: 'This is an automated pull request to sync changes from master to main.'
           labels: 'automated-pull-request'
+
+      - name: Debug information
+        if: failure()
+        run: |
+          echo "##[error] Git failed with exit code $?."
+          git status
+          git log -3
+          ls -al
