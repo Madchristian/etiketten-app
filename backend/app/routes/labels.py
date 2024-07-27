@@ -1,10 +1,11 @@
 from fastapi import APIRouter, File, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse
 import pandas as pd
 from app.services.label_service import create_labels
 from io import BytesIO
 from uuid import uuid4
 import os
+from datetime import datetime
 
 router = APIRouter()
 
@@ -28,7 +29,9 @@ async def upload_file(file: UploadFile = File(...)):
         'Annahmedatum_Uhrzeit1',
         'Notizen_Serviceberater',
         'Kundenname',
-        'Kennzeichen'
+        'Fertigstellungstermin',
+        'Terminart',
+        'Amtl. Kennzeichen'
     ]
     df = pd.read_csv(file_location, delimiter='\t', usecols=columns)
 
@@ -40,6 +43,12 @@ async def upload_file(file: UploadFile = File(...)):
     # Lösche die temporäre Datei
     os.remove(file_location)
 
-    return FileResponse(output, filename="Etiketten.pdf", media_type="application/pdf")
+    # Aktuelles Datum für den Dateinamen
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    filename = f"{current_date}_Terminetiketten.pdf"
 
-__all__ = ["router"]
+    # Verwende StreamingResponse, um die PDF-Datei zurückzugeben
+    headers = {
+        'Content-Disposition': f'attachment; filename="{filename}"'
+    }
+    return StreamingResponse(output, media_type="application/pdf", headers=headers)
