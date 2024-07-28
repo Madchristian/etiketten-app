@@ -37,7 +37,7 @@ function App() {
 
     try {
       console.log("Uploading file:", file);
-      const response = await axios.post('https://etiketten.cstrube.de/upload/', formData, {
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/upload/`, formData, {
         responseType: 'blob',
       });
       console.log("Upload successful:", response);
