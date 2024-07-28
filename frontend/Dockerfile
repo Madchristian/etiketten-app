@@ -1,17 +1,21 @@
-FROM node:20-alpine
+# Build Stage
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Kopiere nur die package.json und yarn.lock (falls vorhanden)
 COPY package.json yarn.lock ./
 
-# Installiere die Abhängigkeiten
 RUN yarn install
 
-# Kopiere den restlichen Code
 COPY . .
 
-# Stelle sicher, dass der Container immer die aktuellsten Dateien hat, während er läuft
-VOLUME ["/app/src", "/app/public"]
+RUN yarn build
 
-CMD ["yarn", "start"]
+# Production Stage
+FROM nginx:alpine
+
+COPY --from=build /app/build /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

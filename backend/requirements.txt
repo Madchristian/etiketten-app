@@ -25,10 +25,16 @@ dnspython==2.6.1
     # via email-validator
 email-validator==2.2.0
     # via fastapi
+environs==11.0.0
+    # via fastapi-cors
 fastapi==0.111.1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   fastapi-cors
 fastapi-cli==0.0.4
     # via fastapi
+fastapi-cors==0.0.6
+    # via -r requirements.in
 h11==0.14.0
     # via
     #   httpcore
@@ -50,10 +56,14 @@ markdown-it-py==3.0.0
     # via rich
 markupsafe==2.1.5
     # via jinja2
+marshmallow==3.21.3
+    # via environs
 mdurl==0.1.2
     # via markdown-it-py
 numpy==2.0.1
     # via pandas
+packaging==24.1
+    # via marshmallow
 pandas==2.2.2
     # via -r requirements.in
 pillow==10.4.0
@@ -64,6 +74,7 @@ pydantic==2.8.2
     # via fastapi
 pydantic-core==2.20.1
     # via pydantic
+python-dotenv
 pygments==2.18.0
     # via rich
 pypng==0.20220715.0
@@ -71,7 +82,9 @@ pypng==0.20220715.0
 python-dateutil==2.9.0.post0
     # via pandas
 python-dotenv==1.0.1
-    # via uvicorn
+    # via
+    #   environs
+    #   uvicorn
 python-multipart==0.0.9
     # via fastapi
 pytz==2024.1
