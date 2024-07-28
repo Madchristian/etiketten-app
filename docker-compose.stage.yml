@@ -1,6 +1,8 @@
+version: '3.8'
+
 services:
   backend:
-    image: registry.cstrube.de/etiketten-app/backend:stage  # Für Staging, für Prod: registry.cstrube.de/etiketten-app/backend:main
+    image: registry.cstrube.de/etiketten-app/backend:stage
     ports:
       - "8000:8000"
     healthcheck:
@@ -10,9 +12,14 @@ services:
       retries: 3
     networks:
       - etiketten-netzwerk
+    environment:
+      - DOCKER_REGISTRY_URL=registry.cstrube.de
+      - DOCKER_REGISTRY_USERNAME=${DOCKER_REGISTRY_USERNAME}
+      - DOCKER_REGISTRY_PASSWORD=${DOCKER_REGISTRY_PASSWORD}
+    entrypoint: /bin/sh -c "echo $DOCKER_REGISTRY_PASSWORD | docker login $DOCKER_REGISTRY_URL -u $DOCKER_REGISTRY_USERNAME --password-stdin && docker-compose up"
 
   frontend:
-    image: registry.cstrube.de/etiketten-app/frontend:stage  # Für Staging, für Prod: registry.cstrube.de/etiketten-app/frontend:main
+    image: registry.cstrube.de/etiketten-app/frontend:stage
     env_file:
       - ./frontend/.env
     ports:
@@ -21,6 +28,7 @@ services:
       - backend
     networks:
       - etiketten-netzwerk
+
 
 networks:
   etiketten-netzwerk:

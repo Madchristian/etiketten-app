@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     image: registry.cstrube.de/etiketten-app/backend:main
@@ -12,6 +10,11 @@ services:
       retries: 3
     networks:
       - etiketten-netzwerk
+    environment:
+      - DOCKER_REGISTRY_URL=registry.cstrube.de
+      - DOCKER_REGISTRY_USERNAME=${DOCKER_REGISTRY_USERNAME}
+      - DOCKER_REGISTRY_PASSWORD=${DOCKER_REGISTRY_PASSWORD}
+    entrypoint: /bin/sh -c "echo $DOCKER_REGISTRY_PASSWORD | docker login $DOCKER_REGISTRY_URL -u $DOCKER_REGISTRY_USERNAME --password-stdin && docker-compose up"
 
   frontend:
     image: registry.cstrube.de/etiketten-app/frontend:main
