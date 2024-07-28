@@ -5,6 +5,8 @@ services:
     image: registry.cstrube.de/etiketten-app/backend:stage
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -13,23 +15,31 @@ services:
     networks:
       - etiketten-netzwerk
     environment:
-      - DOCKER_REGISTRY_URL=registry.cstrube.de
       - DOCKER_REGISTRY_USERNAME=${DOCKER_REGISTRY_USERNAME}
       - DOCKER_REGISTRY_PASSWORD=${DOCKER_REGISTRY_PASSWORD}
-    entrypoint: /bin/sh -c "echo $DOCKER_REGISTRY_PASSWORD | docker login $DOCKER_REGISTRY_URL -u $DOCKER_REGISTRY_USERNAME --password-stdin && docker-compose up"
+    volumes:
+      - backend-data:/app
+      - ./backend/app/.env:/app/.env
 
   frontend:
     image: registry.cstrube.de/etiketten-app/frontend:stage
     env_file:
-      - ./frontend/.env
+      - .env
     ports:
       - "3000:80"
     depends_on:
       - backend
     networks:
       - etiketten-netzwerk
-
+    environment:
+      - DOCKER_REGISTRY_USERNAME=${DOCKER_REGISTRY_USERNAME}
+      - DOCKER_REGISTRY_PASSWORD=${DOCKER_REGISTRY_PASSWORD}
+    volumes:
+      - ./frontend/.env:/app/.env
 
 networks:
   etiketten-netzwerk:
     driver: bridge
+
+volumes:
+  backend-data:
