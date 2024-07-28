@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   backend:
-    image: registry.cstrube.de/etiketten-app/backend:main
+    image: registry.cstrube.de/etiketten-app/backend:stage  # Für Staging, für Prod: registry.cstrube.de/etiketten-app/backend:main
     ports:
       - "8000:8000"
     healthcheck:
@@ -14,7 +12,7 @@ services:
       - etiketten-netzwerk
 
   frontend:
-    image: registry.cstrube.de/etiketten-app/frontend:main
+    image: registry.cstrube.de/etiketten-app/frontend:stage  # Für Staging, für Prod: registry.cstrube.de/etiketten-app/frontend:main
     env_file:
       - ./frontend/.env
     ports:
