@@ -13,8 +13,6 @@ on:
       - dev
       - stage
       - main
-  schedule:
-    - cron: '0 2 * * *'  # Täglicher Build um 2 Uhr morgens
   release:
     types: [published]
 
@@ -28,7 +26,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.12'
         cache: 'pip'
 
     - run: pip install --upgrade pip
@@ -55,11 +53,11 @@ jobs:
 
     - name: Get the backend version
       id: get_version
-      run: echo "::set-output name=VERSION::$(cat backend/VERSION)"
+      run: echo "VERSION=$(cat backend/VERSION)" >> $GITHUB_ENV
 
     - name: Set Docker Tags
       run: |
-        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/backend:${{ steps.get_version.outputs.VERSION }}-${{ github.ref_name }},registry.cstrube.de/etiketten-app/backend:${{ github.ref_name }}" >> $GITHUB_ENV
+        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/backend:${{ env.VERSION }}-${{ github.ref_name }},registry.cstrube.de/etiketten-app/backend:${{ github.ref_name }}" >> $GITHUB_ENV
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
           echo "DOCKER_TAGS=$DOCKER_TAGS,registry.cstrube.de/etiketten-app/backend:latest" >> $GITHUB_ENV
         fi

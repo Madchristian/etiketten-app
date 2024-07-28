@@ -13,8 +13,6 @@ on:
       - dev
       - stage
       - main
-  schedule:
-    - cron: '0 2 * * *'  # Täglicher Build um 2 Uhr morgens
   release:
     types: [published]
 
@@ -28,7 +26,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16'
+        node-version: '20'
         cache: 'yarn'
 
     - run: yarn install --cwd frontend
@@ -54,11 +52,11 @@ jobs:
 
     - name: Get the frontend version
       id: get_version
-      run: echo "::set-output name=VERSION::$(cat frontend/VERSION)"
+      run: echo "VERSION=$(cat frontend/VERSION)" >> $GITHUB_ENV
 
     - name: Set Docker Tags
       run: |
-        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/frontend:${{ steps.get_version.outputs.VERSION }}-${{ github.ref_name }},registry.cstrube.de/etiketten-app/frontend:${{ github.ref_name }}" >> $GITHUB_ENV
+        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/frontend:${{ env.VERSION }}-${{ github.ref_name }},registry.cstrube.de/etiketten-app/frontend:${{ github.ref_name }}" >> $GITHUB_ENV
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
           echo "DOCKER_TAGS=$DOCKER_TAGS,registry.cstrube.de/etiketten-app/frontend:latest" >> $GITHUB_ENV
         fi
