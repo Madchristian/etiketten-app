@@ -11,7 +11,6 @@ async def get_status():
     row = cursor.fetchone()
     labels_count = row[0] if row else 0
     tmp_files_count = len(os.listdir("files"))
-
     
     cursor.execute('SELECT COUNT(*) FROM etiketten')
     etiketten_count = cursor.fetchone()[0]
@@ -25,6 +24,3 @@ async def get_status():
         "etiketten_count": etiketten_count,
         "processed_labels_count": processed_labels_count
     })
-
-    return JSONResponse(content={"labels_count": labels_count, "tmp_files_count": tmp_files_count})
-
