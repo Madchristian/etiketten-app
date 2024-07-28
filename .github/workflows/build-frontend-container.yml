@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - stage
+      - dev
     paths:
       - frontend/**
   pull_request:
@@ -16,7 +17,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -29,7 +30,7 @@ jobs:
         cache-dependency-path: 'frontend/yarn.lock'
 
     - name: Install dependencies
-      working-directory: ./frontend
+      working-directory: ./frontend    
       run: yarn install
 
     - name: Set up Docker Buildx
@@ -55,16 +56,20 @@ jobs:
       id: get_version
       run: echo "VERSION=$(cat frontend/VERSION)" >> $GITHUB_ENV
 
+    - name: Debug GITHUB_REF
+      run: echo "GITHUB_REF is $GITHUB_REF"
+
     - name: Set Docker Tags
       run: |
-        BRANCH=$(echo "${GITHUB_REF##*/}" | tr / -)
-        if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/stage" ]; then
-          BRANCH="stage"
-        elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-          BRANCH="main"
+        if [[ "$GITHUB_REF" == refs/heads/* ]]; then
+          BRANCH_NAME=${GITHUB_REF##*/}
+        elif [[ "$GITHUB_REF" == refs/pull/* ]]; then
+          BRANCH_NAME=${GITHUB_HEAD_REF}
+        else
+          BRANCH_NAME="unknown"
         fi
-        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/frontend:${{ env.VERSION }}-${BRANCH},registry.cstrube.de/etiketten-app/frontend:${BRANCH}" >> $GITHUB_ENV
-        if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/frontend:${VERSION}-${BRANCH_NAME},registry.cstrube.de/etiketten-app/frontend:${BRANCH_NAME}" >> $GITHUB_ENV
+        if [ "$BRANCH_NAME" = "main" ]; then
           echo "DOCKER_TAGS=$DOCKER_TAGS,registry.cstrube.de/etiketten-app/frontend:latest" >> $GITHUB_ENV
         fi
 
