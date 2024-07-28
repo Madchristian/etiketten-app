@@ -3,14 +3,16 @@ name: Build and Push Frontend
 on:
   push:
     branches:
-      - production
+      - main
       - dev
+      - stage
     paths:
       - frontend/**
   pull_request:
     branches:
       - dev
-      - production
+      - stage
+      - main
   schedule:
     - cron: '0 2 * * *'  # Täglicher Build um 2 Uhr morgens
   release:
@@ -57,7 +59,7 @@ jobs:
     - name: Set Docker Tags
       run: |
         echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/frontend:${{ steps.get_version.outputs.VERSION }}-${{ github.ref_name }},registry.cstrube.de/etiketten-app/frontend:${{ github.ref_name }}" >> $GITHUB_ENV
-        if [ "${{ github.ref }}" = "refs/heads/production" ]; then
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
           echo "DOCKER_TAGS=$DOCKER_TAGS,registry.cstrube.de/etiketten-app/frontend:latest" >> $GITHUB_ENV
         fi
 
