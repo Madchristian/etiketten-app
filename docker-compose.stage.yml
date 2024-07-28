@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     image: registry.cstrube.de/etiketten-app/backend:stage
@@ -19,7 +17,7 @@ services:
       - DOCKER_REGISTRY_PASSWORD=${DOCKER_REGISTRY_PASSWORD}
     volumes:
       - backend-data:/app
-      - ./backend/app/.env:/app/.env
+      - ./backend/app/.env:/app/.env:ro
 
   frontend:
     image: registry.cstrube.de/etiketten-app/frontend:stage
@@ -35,7 +33,7 @@ services:
       - DOCKER_REGISTRY_USERNAME=${DOCKER_REGISTRY_USERNAME}
       - DOCKER_REGISTRY_PASSWORD=${DOCKER_REGISTRY_PASSWORD}
     volumes:
-      - ./frontend/.env:/app/.env
+      - ./frontend/.env:/app/.env:ro
 
 networks:
   etiketten-netzwerk:
