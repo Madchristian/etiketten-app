@@ -1,0 +1,2 @@
+# Ignore docker-compose.yml for merges
+docker-compose.yml merge=ours

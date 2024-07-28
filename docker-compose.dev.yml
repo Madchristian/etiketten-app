@@ -1,20 +1,15 @@
-version: '3.8'
-
 services:
   backend:
-    image: registry.cstrube.de/etiketten-app/backend:main
+    build:
+      context: ./backend
     ports:
       - "8000:8000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     networks:
       - etiketten-netzwerk
 
   frontend:
-    image: registry.cstrube.de/etiketten-app/frontend:main
+    build:
+      context: ./frontend
     env_file:
       - ./frontend/.env
     ports:
