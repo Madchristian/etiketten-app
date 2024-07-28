@@ -1,7 +1,6 @@
 services:
   backend:
-    build:
-      context: ./backend
+    image: registry.cstrube.de/etiketten-app/backend:main
     ports:
       - "8000:8000"
     healthcheck:
@@ -13,8 +12,7 @@ services:
       - etiketten-netzwerk
 
   frontend:
-    build:
-      context: ./frontend
+    image: registry.cstrube.de/etiketten-app/frontend:main
     env_file:
       - ./frontend/.env
     ports:
