@@ -56,11 +56,9 @@ jobs:
       run: echo "VERSION=$(cat frontend/VERSION)" >> $GITHUB_ENV
 
     - name: Set Docker Tags
-      id: docker_tags
       run: |
-        BRANCH_NAME=$(echo $GITHUB_REF | awk -F'/' '{print $NF}')
-        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/frontend:${{ env.VERSION }}-$BRANCH_NAME,registry.cstrube.de/etiketten-app/frontend:$BRANCH_NAME" >> $GITHUB_ENV
-        if [ "$BRANCH_NAME" = "main" ]; then
+        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/frontend:${{ env.VERSION }}-${{ github.ref_name }},registry.cstrube.de/etiketten-app/frontend:${{ github.ref_name }}" >> $GITHUB_ENV
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
           echo "DOCKER_TAGS=$DOCKER_TAGS,registry.cstrube.de/etiketten-app/frontend:latest" >> $GITHUB_ENV
         fi
 
