@@ -37,9 +37,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.sha }}
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-buildx-${{ github.ref_name }}-
+          ${{ runner.os }}-buildx-${{ github.sha }}
           ${{ runner.os }}-buildx-
 
     - name: Login to Docker Registry
@@ -55,8 +55,9 @@ jobs:
 
     - name: Set Docker Tags
       run: |
-        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/backend:${{ env.VERSION }}-${{ github.ref_name }},registry.cstrube.de/etiketten-app/backend:${{ github.ref_name }}" >> $GITHUB_ENV
-        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+        BRANCH=$(echo "${GITHUB_REF##*/}" | tr / -)
+        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/backend:${{ env.VERSION }}-${BRANCH},registry.cstrube.de/etiketten-app/backend:${BRANCH}" >> $GITHUB_ENV
+        if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
           echo "DOCKER_TAGS=$DOCKER_TAGS,registry.cstrube.de/etiketten-app/backend:latest" >> $GITHUB_ENV
         fi
 
