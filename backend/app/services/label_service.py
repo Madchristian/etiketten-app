@@ -40,7 +40,7 @@ def format_datetime(datetime_str):
         dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
         formatted_date = dt.strftime('%d.%m')
         formatted_time = dt.strftime('%H:%M')
-        return f"{formatted_date} - {formatted_time}"
+        return f"{formatted_date} {formatted_time}"
     except ValueError:
         return datetime_str
 
@@ -56,6 +56,10 @@ def create_labels(dataframe, output):
     # NaN-Werte durch leere Strings ersetzen und alle Werte in Strings konvertieren
     dataframe = dataframe.fillna('').astype(str)
     dataframe['Auftragsnummer'] = dataframe['Auftragsnummer'].astype(str).str.split('.').str[0]  # Entferne '.0' von Auftragsnummern
+
+    # Sortieren nach Annahmedatum_Uhrzeit1
+    dataframe['Annahmedatum_Uhrzeit1'] = pd.to_datetime(dataframe['Annahmedatum_Uhrzeit1'], format='%Y-%m-%d %H:%M:%S')
+    dataframe.sort_values(by='Annahmedatum_Uhrzeit1', inplace=True)
 
     # PDF-Dokument erstellen
     c = canvas.Canvas(output, pagesize=A4)
@@ -108,11 +112,12 @@ def create_labels(dataframe, output):
         c.drawString(text_x, text_y, kundenname)
 
         c.setFont("Helvetica", 8)
-        text_y -= 3 * mm
-        formatted_datetime = format_datetime(row['Annahmedatum_Uhrzeit1']) + " - " + format_datetime(row['Fertigstellungstermin'])
-        c.drawString(text_x, text_y, formatted_datetime)
+        text_y -= 4 * mm
+        formatted_annahme = format_datetime(row['Annahmedatum_Uhrzeit1'].strftime('%Y-%m-%d %H:%M:%S'))
+        formatted_fertigstellung = format_datetime(row['Fertigstellungstermin'])
+        c.drawString(text_x, text_y, f"{formatted_annahme} bis {formatted_fertigstellung}")
 
-        # Rechteck um das Kennzeichen zeichnen und rechtsbündige Auftragsnummer
+        # rechtsbündige Auftragsnummer
         c.setFont("Helvetica-Bold", 10)
         kennzeichen = row['Amtl. Kennzeichen']
         auftragsnummer = f"AU{row['Auftragsnummer']}"
