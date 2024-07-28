@@ -40,7 +40,7 @@ def format_datetime(datetime_str):
         dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
         formatted_date = dt.strftime('%d.%m')
         formatted_time = dt.strftime('%H:%M')
-        return f"{formatted_time} - {formatted_date}"
+        return f"{formatted_date} - {formatted_time}"
     except ValueError:
         return datetime_str
 
