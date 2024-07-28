@@ -1,6 +1,13 @@
 import sqlite3
+import os
 
-db_path = '/app/etiketten.db'
+db_dir = '/app'
+db_path = os.path.join(db_dir, 'etiketten.db')
+
+# Verzeichnis erstellen, falls es nicht existiert
+if not os.path.exists(db_dir):
+    os.makedirs(db_dir)
+
 conn = sqlite3.connect(db_path, check_same_thread=False)
 cursor = conn.cursor()
 

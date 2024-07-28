@@ -16,7 +16,7 @@ services:
       - DOCKER_REGISTRY_USERNAME=${DOCKER_REGISTRY_USERNAME}
       - DOCKER_REGISTRY_PASSWORD=${DOCKER_REGISTRY_PASSWORD}
     volumes:
-      - etiketten-db-data:/app/etiketten.db  # Volumen für die SQLite-Datenbank
+      - backend-data:/app
       - ./backend/app/.env:/app/.env
 
   frontend:
@@ -40,4 +40,4 @@ networks:
     driver: bridge
 
 volumes:
-  etiketten-db-data:
+  backend-data:
