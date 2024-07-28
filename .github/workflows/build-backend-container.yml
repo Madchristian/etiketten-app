@@ -59,9 +59,15 @@ jobs:
 
     - name: Set Docker Tags
       run: |
-        BRANCH_NAME=${GITHUB_REF##*/}
+        if [[ "$GITHUB_REF" == refs/heads/* ]]; then
+          BRANCH_NAME=${GITHUB_REF##*/}
+        elif [[ "$GITHUB_REF" == refs/pull/* ]]; then
+          BRANCH_NAME=${GITHUB_HEAD_REF}
+        else
+          BRANCH_NAME="unknown"
+        fi
         echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/backend:${VERSION}-${BRANCH_NAME},registry.cstrube.de/etiketten-app/backend:${BRANCH_NAME}" >> $GITHUB_ENV
-        if [ "${BRANCH_NAME}" = "main" ]; then
+        if [ "$BRANCH_NAME" = "main" ]; then
           echo "DOCKER_TAGS=$DOCKER_TAGS,registry.cstrube.de/etiketten-app/backend:latest" >> $GITHUB_ENV
         fi
 
