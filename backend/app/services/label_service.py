@@ -34,6 +34,16 @@ def wrap_text(c, text, x, y, max_width, line_height, max_lines):
         y -= line_height  # Abstand zwischen den Zeilen
     return y
 
+def format_datetime(datetime_str):
+    """ Hilfsfunktion zum Formatieren von Datum und Uhrzeit """
+    try:
+        dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
+        formatted_date = dt.strftime('%d.%m')
+        formatted_time = dt.strftime('%H:%M')
+        return f"{formatted_date} {formatted_time}"
+    except ValueError:
+        return datetime_str
+
 def create_labels(dataframe, output):
     # Avery Zweckform Etiketten auf A4 Blatt (40 Etiketten pro Seite, 4 x 10)
     label_width = 48.5 * mm
@@ -46,6 +56,10 @@ def create_labels(dataframe, output):
     # NaN-Werte durch leere Strings ersetzen und alle Werte in Strings konvertieren
     dataframe = dataframe.fillna('').astype(str)
     dataframe['Auftragsnummer'] = dataframe['Auftragsnummer'].astype(str).str.split('.').str[0]  # Entferne '.0' von Auftragsnummern
+
+    # Sortieren nach Annahmedatum_Uhrzeit1
+    dataframe['Annahmedatum_Uhrzeit1'] = pd.to_datetime(dataframe['Annahmedatum_Uhrzeit1'], format='%Y-%m-%d %H:%M:%S')
+    dataframe.sort_values(by='Annahmedatum_Uhrzeit1', inplace=True)
 
     # PDF-Dokument erstellen
     c = canvas.Canvas(output, pagesize=A4)
@@ -98,10 +112,12 @@ def create_labels(dataframe, output):
         c.drawString(text_x, text_y, kundenname)
 
         c.setFont("Helvetica", 8)
-        text_y -= 3 * mm
-        c.drawString(text_x, text_y, f"{row['Annahmedatum_Uhrzeit1']} - {row['Fertigstellungstermin']}")
+        text_y -= 4 * mm
+        formatted_annahme = format_datetime(row['Annahmedatum_Uhrzeit1'].strftime('%Y-%m-%d %H:%M:%S'))
+        formatted_fertigstellung = format_datetime(row['Fertigstellungstermin'])
+        c.drawString(text_x, text_y, f"{formatted_annahme} bis {formatted_fertigstellung}")
 
-        # Rechteck um das Kennzeichen zeichnen und rechtsbündige Auftragsnummer
+        # rechtsbündige Auftragsnummer
         c.setFont("Helvetica-Bold", 10)
         kennzeichen = row['Amtl. Kennzeichen']
         auftragsnummer = f"AU{row['Auftragsnummer']}"

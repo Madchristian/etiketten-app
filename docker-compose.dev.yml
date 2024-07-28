@@ -6,6 +6,8 @@ services:
       - "8000:8000"
     networks:
       - etiketten-netzwerk
+    volumes:
+      - ./backend/app/.env:/app/.env:ro
 
   frontend:
     build:

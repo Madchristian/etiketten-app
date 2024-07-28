@@ -110,7 +110,7 @@ function App() {
           </p>
         </section>
         <section className="upload-section">
-          <h2>TXT-Datei hochladen</h2>
+          <h2>Termine (TAB).txt - Datei hochladen</h2>
           {errorMessage && <p className="error-message">{errorMessage}</p>}
           <form id="upload-form" method="post" onSubmit={handleUpload}>
             <div 
