@@ -54,15 +54,11 @@ jobs:
       run: echo "VERSION=$(cat backend/VERSION)" >> $GITHUB_ENV
 
     - name: Set Docker Tags
+      id: docker_tags
       run: |
-        BRANCH=$(echo "${GITHUB_REF##*/}" | tr / -)
-        if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/stage" ]; then
-          BRANCH="stage"
-        elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-          BRANCH="main"
-        fi
-        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/backend:${{ env.VERSION }}-${BRANCH},registry.cstrube.de/etiketten-app/backend:${BRANCH}" >> $GITHUB_ENV
-        if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+        BRANCH_NAME=${GITHUB_REF##*/}
+        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/backend:${{ env.VERSION }}-$BRANCH_NAME,registry.cstrube.de/etiketten-app/backend:$BRANCH_NAME" >> $GITHUB_ENV
+        if [ "$BRANCH_NAME" = "main" ]; then
           echo "DOCKER_TAGS=$DOCKER_TAGS,registry.cstrube.de/etiketten-app/backend:latest" >> $GITHUB_ENV
         fi
 

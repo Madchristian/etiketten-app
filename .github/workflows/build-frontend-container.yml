@@ -22,15 +22,13 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v3
       with:
         node-version: '20'
         cache: 'yarn'
-        cache-dependency-path: 'frontend/yarn.lock'
 
     - name: Install dependencies
-      working-directory: ./frontend
-      run: yarn install
+      run: yarn install --cwd frontend
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -39,9 +37,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-buildx-${{ github.ref_name }}-${{ github.sha }}
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-buildx-${{ github.ref_name }}-
+          ${{ runner.os }}-buildx-${{ github.sha }}
           ${{ runner.os }}-buildx-
 
     - name: Login to Docker Registry
@@ -56,9 +54,11 @@ jobs:
       run: echo "VERSION=$(cat frontend/VERSION)" >> $GITHUB_ENV
 
     - name: Set Docker Tags
+      id: docker_tags
       run: |
-        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/frontend:${{ env.VERSION }}-${{ github.ref_name }},registry.cstrube.de/etiketten-app/frontend:${{ github.ref_name }}" >> $GITHUB_ENV
-        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+        BRANCH_NAME=${GITHUB_REF##*/}
+        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/frontend:${{ env.VERSION }}-$BRANCH_NAME,registry.cstrube.de/etiketten-app/frontend:$BRANCH_NAME" >> $GITHUB_ENV
+        if [ "$BRANCH_NAME" = "main" ]; then
           echo "DOCKER_TAGS=$DOCKER_TAGS,registry.cstrube.de/etiketten-app/frontend:latest" >> $GITHUB_ENV
         fi
 
