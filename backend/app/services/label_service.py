@@ -1,21 +1,19 @@
+import pandas as pd
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from datetime import datetime
-import pandas as pd
 
 def map_terminart(terminart):
     mapping = {
-        'K': 'KW',  # Wartet
-        'H': 'H&B',  # Hol&Bring
-        'R': ''      # Normal
-        # Füge hier weitere Zuordnungen hinzu, falls nötig
+        'K': 'KW',
+        'H': 'H&B',
+        'R': ''
     }
     return mapping.get(terminart, '')
 
 def wrap_text(c, text, x, y, max_width, line_height, max_lines):
-    """ Hilfsfunktion zum Umbruch von Text, um innerhalb eines bestimmten Breitenlimits zu bleiben und max. Anzahl von Zeilen zu begrenzen """
     words = text.split(' ')
     lines = []
     line = []
@@ -25,17 +23,16 @@ def wrap_text(c, text, x, y, max_width, line_height, max_lines):
         else:
             lines.append(' '.join(line))
             line = [word]
-        if len(lines) >= max_lines:  # Stoppe, wenn max. Anzahl von Zeilen erreicht ist
+        if len(lines) >= max_lines:
             break
     if len(lines) < max_lines:
-        lines.append(' '.join(line))  # Letzte Zeile hinzufügen, wenn noch Platz ist
+        lines.append(' '.join(line))
     for line in lines:
         c.drawString(x, y, line)
-        y -= line_height  # Abstand zwischen den Zeilen
+        y -= line_height
     return y
 
 def format_datetime(datetime_str):
-    """ Hilfsfunktion zum Formatieren von Datum und Uhrzeit """
     try:
         dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
         formatted_date = dt.strftime('%d.%m')
@@ -45,7 +42,6 @@ def format_datetime(datetime_str):
         return datetime_str
 
 def create_labels(dataframe, output):
-    # Avery Zweckform Etiketten auf A4 Blatt (40 Etiketten pro Seite, 4 x 10)
     label_width = 48.5 * mm
     label_height = 25.4 * mm
     margin_left = 8 * mm
@@ -53,93 +49,83 @@ def create_labels(dataframe, output):
     h_space = 0 * mm
     v_space = 0 * mm
 
-    # NaN-Werte durch leere Strings ersetzen und alle Werte in Strings konvertieren
     dataframe = dataframe.fillna('').astype(str)
-    dataframe['Auftragsnummer'] = dataframe['Auftragsnummer'].astype(str).str.split('.').str[0]  # Entferne '.0' von Auftragsnummern
+    dataframe['Auftragsnummer'] = dataframe['Auftragsnummer'].astype(str).str.split('.').str[0]
 
-    # Sortieren nach Annahmedatum_Uhrzeit1
-    dataframe['Annahmedatum_Uhrzeit1'] = pd.to_datetime(dataframe['Annahmedatum_Uhrzeit1'], format='%Y-%m-%d %H:%M:%S')
-    dataframe.sort_values(by='Annahmedatum_Uhrzeit1', inplace=True)
-
-    # PDF-Dokument erstellen
     c = canvas.Canvas(output, pagesize=A4)
     width, height = A4
 
-    # Aktuelles Datum und Uhrzeit
     current_datetime = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
     total_labels = len(dataframe)
     labels_per_page = 40
-    total_pages = (total_labels + labels_per_page - 1) // labels_per_page  # Aufrunden
+    total_pages = (total_labels + labels_per_page - 1) // labels_per_page
 
-    # Position der Etiketten auf der Seite berechnen
+    def draw_header(c, page_number, total_pages):
+        c.setFont("Helvetica", 10)
+        c.drawString(margin_left, height - 10 * mm, f"Erstellt am: {current_datetime}")
+        c.drawRightString(width - margin_left, height - 10 * mm, f"Seite {page_number} von {total_pages}")
+
+    page_number = 1
+    draw_header(c, page_number, total_pages)
+
     for index, row in dataframe.iterrows():
+        if index > 0 and index % labels_per_page == 0:
+            c.showPage()
+            page_number += 1
+            draw_header(c, page_number, total_pages)
+
         col = index % 4
         row_num = (index // 4) % 10
         x = margin_left + col * (label_width + h_space)
         y = height - margin_top - (row_num + 1) * label_height - row_num * v_space
 
-        if index % labels_per_page == 0:
-            # Kopfzeile mit Datum, Uhrzeit und Seitennummerierung
-            c.setFont("Helvetica", 10)
-            c.drawString(margin_left, height - 10 * mm, f"Erstellt am: {current_datetime}")
-            c.drawRightString(width - margin_left, height - 10 * mm, f"Seite {(index // labels_per_page) + 1} von {total_pages}")
+        # Debugging-Ausgabe für jede Position des Labels
+        print(f"Index: {index}, Seite: {page_number}, Spalte: {col}, Zeile: {row_num}")
 
-        # Zeichnen der Etiketten
         c.setStrokeColor(colors.black)
         c.setLineWidth(1)
         c.rect(x, y, label_width, label_height)
 
-        # Text innerhalb der Grenzen platzieren
         text_x = x + 2 * mm
         text_y = y + label_height - 4 * mm
 
         terminart_abkuerzung = map_terminart(row['Terminart'])
 
-        # Begrenze den Namen auf eine bestimmte Länge, um Überschreibungen zu vermeiden
         max_name_length = 21
         kundenname = row['Kundenname']
         if len(kundenname) > max_name_length:
             kundenname = kundenname[:max_name_length] + '...'
 
-        # Terminart oben rechts in Rot
         if terminart_abkuerzung:
             c.setFont("Helvetica-Bold", 10)
             c.setFillColor(colors.red)
             c.drawString(x + label_width - 10 * mm, y + label_height - 4 * mm, terminart_abkuerzung)
-            c.setFillColor(colors.black)  # Zurücksetzen auf Schwarz für den Rest des Textes
+            c.setFillColor(colors.black)
 
         c.setFont("Helvetica-Bold", 8)
         c.drawString(text_x, text_y, kundenname)
 
         c.setFont("Helvetica", 8)
         text_y -= 4 * mm
-        formatted_annahme = format_datetime(row['Annahmedatum_Uhrzeit1'].strftime('%Y-%m-%d %H:%M:%S'))
+        formatted_annahme = format_datetime(row['Annahmedatum_Uhrzeit1'])
         formatted_fertigstellung = format_datetime(row['Fertigstellungstermin'])
         c.drawString(text_x, text_y, f"{formatted_annahme} bis {formatted_fertigstellung}")
 
-        # rechtsbündige Auftragsnummer
         c.setFont("Helvetica-Bold", 10)
-        kennzeichen = row['Amtl. Kennzeichen']
+        kennzeichen = row['Amtl_Kennzeichen']
         auftragsnummer = f"AU{row['Auftragsnummer']}"
         kennzeichen_width = c.stringWidth(kennzeichen, "Helvetica-Bold", 10)
         auftragsnummer_width = c.stringWidth(auftragsnummer, "Helvetica-Bold", 10)
         space_between = label_width - (kennzeichen_width + auftragsnummer_width + 4 * mm)
 
-        c.drawString(text_x, text_y - 5 * mm, kennzeichen)
-        c.drawRightString(x + label_width - 2 * mm, text_y - 5 * mm, auftragsnummer)
+        c.drawString(text_x, text_y - 4 * mm, kennzeichen)
+        c.drawRightString(x + label_width - 2 * mm, text_y - 4 * mm, auftragsnummer)
 
-        # Linie unter dem Kennzeichen zeichnen
         c.setLineWidth(0.5)
-        c.line(text_x, text_y - 6 * mm, x + label_width - 2 * mm, text_y - 6 * mm)  # Linie näher an das Kennzeichen rücken
-
-        # Notiztext umbrochen und auf 200 Zeichen begrenzt
+        c.line(text_x, text_y - 5 * mm, x + label_width - 2 * mm, text_y - 5 * mm)
         c.setFont("Helvetica", 7)
-        text_y -= 8 * mm  # Text näher an die Linie rücken
-        notiz = row['Notizen_Serviceberater'][:200]  # Begrenze auf 200 Zeichen
-        text_y = wrap_text(c, notiz, text_x, text_y, label_width - 4 * mm, line_height=7, max_lines=5)
-
-        # Neue Seite hinzufügen, wenn 40 Etiketten erreicht sind
-        if (index + 1) % 40 == 0:
-            c.showPage()
+        text_y -= 8 * mm
+        notiz = row['Notizen_Serviceberater'][:180]
+        text_y = wrap_text(c, notiz, text_x, text_y, label_width - 3 * mm, line_height=7, max_lines=5)
 
     c.save()
