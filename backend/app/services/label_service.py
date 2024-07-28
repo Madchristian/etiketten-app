@@ -106,7 +106,7 @@ def create_labels(dataframe, output):
         c.drawString(text_x, text_y, kundenname)
 
         c.setFont("Helvetica", 8)
-        text_y -= 4 * mm
+        text_y -= 3.5 * mm
         formatted_annahme = format_datetime(row['Annahmedatum_Uhrzeit1'])
         formatted_fertigstellung = format_datetime(row['Fertigstellungstermin'])
         c.drawString(text_x, text_y, f"{formatted_annahme} bis {formatted_fertigstellung}")
@@ -124,7 +124,7 @@ def create_labels(dataframe, output):
         c.setLineWidth(0.5)
         c.line(text_x, text_y - 5 * mm, x + label_width - 2 * mm, text_y - 5 * mm)
         c.setFont("Helvetica", 7)
-        text_y -= 8 * mm
+        text_y -= 7 * mm
         notiz = row['Notizen_Serviceberater'][:180]
         text_y = wrap_text(c, notiz, text_x, text_y, label_width - 3 * mm, line_height=7, max_lines=5)
 
