@@ -29,7 +29,8 @@ jobs:
         cache-dependency-path: 'frontend/yarn.lock'
 
     - name: Install dependencies
-      run: yarn install --cwd frontend
+      working-directory: ./frontend    
+      run: yarn install
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
