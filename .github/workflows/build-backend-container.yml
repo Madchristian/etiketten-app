@@ -4,17 +4,13 @@ on:
   push:
     branches:
       - main
-      - dev
       - stage
     paths:
       - backend/**
   pull_request:
     branches:
-      - dev
       - stage
       - main
-  schedule:
-    - cron: '0 2 * * *'  # Täglicher Build um 2 Uhr morgens
   release:
     types: [published]
 
@@ -28,9 +24,9 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.12'
         cache: 'pip'
-
+    
     - run: pip install --upgrade pip
     - run: pip install -r backend/requirements.txt
 

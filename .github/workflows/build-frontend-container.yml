@@ -4,17 +4,13 @@ on:
   push:
     branches:
       - main
-      - dev
       - stage
     paths:
       - frontend/**
   pull_request:
     branches:
-      - dev
       - stage
       - main
-  schedule:
-    - cron: '0 2 * * *'  # Täglicher Build um 2 Uhr morgens
   release:
     types: [published]
 
@@ -28,7 +24,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16'
+        node-version: '20'
         cache: 'yarn'
 
     - run: yarn install --cwd frontend
