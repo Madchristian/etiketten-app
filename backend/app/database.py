@@ -2,6 +2,12 @@ import sqlite3
 import os
 import pandas as pd
 import uuid
+import logging
+from datetime import datetime
+
+# Logging konfigurieren
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 db_dir = '/app'
 db_path = os.path.join(db_dir, 'etiketten.db')
@@ -13,10 +19,15 @@ if not os.path.exists(db_dir):
 conn = sqlite3.connect(db_path, check_same_thread=False)
 cursor = conn.cursor()
 
-# Tabelle erstellen, falls nicht vorhanden
+# Tabellen erstellen, falls nicht vorhanden
 cursor.execute('''CREATE TABLE IF NOT EXISTS etiketten_count (
                   id INTEGER PRIMARY KEY,
                   count INTEGER NOT NULL DEFAULT 0
+                )''')
+cursor.execute('''CREATE TABLE IF NOT EXISTS processed_labels (
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  timestamp TEXT,
+                  label_count INTEGER
                 )''')
 conn.commit()
 
@@ -64,10 +75,10 @@ def load_data_to_db(file_path, db_path):
     df['upload_id'] = upload_id  # UUID zur DataFrame hinzufügen
 
     # Debugging-Ausgabe der Spalten und ersten Zeilen der DataFrame
-    print("DataFrame Spalten nach dem Laden:")
-    print(df.columns)
-    print("Erste Zeilen der DataFrame:")
-    print(df.head())
+    logger.info("DataFrame Spalten nach dem Laden:")
+    logger.info(df.columns)
+    logger.info("Erste Zeilen der DataFrame:")
+    logger.info(df.head())
 
     # Daten in die Datenbank einfügen
     df.to_sql('etiketten', conn, if_exists='append', index=False)
@@ -75,8 +86,8 @@ def load_data_to_db(file_path, db_path):
     # Debugging-Ausgabe der Tabellenstruktur
     cursor.execute('PRAGMA table_info(etiketten)')
     table_info = cursor.fetchall()
-    print("Struktur der Tabelle 'etiketten':")
-    print(table_info)
+    logger.info("Struktur der Tabelle 'etiketten':")
+    logger.info(table_info)
 
     conn.close()
 
@@ -97,5 +108,13 @@ def delete_data_by_upload_id(db_path, upload_id):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('DELETE FROM etiketten WHERE upload_id = ?', (upload_id,))
+    conn.commit()
+    conn.close()
+
+def log_processed_labels(db_path, label_count):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute('INSERT INTO processed_labels (timestamp, label_count) VALUES (?, ?)', (timestamp, label_count))
     conn.commit()
     conn.close()
