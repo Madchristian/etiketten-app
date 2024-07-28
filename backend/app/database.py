@@ -9,26 +9,30 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 db_dir = '/app'
 db_path = os.path.join(db_dir, 'etiketten.db')
 
-# Verzeichnis erstellen, falls nicht existiert
+
+# Verzeichnis erstellen, falls es nicht existiert
 if not os.path.exists(db_dir):
     os.makedirs(db_dir)
 
 conn = sqlite3.connect(db_path, check_same_thread=False)
 cursor = conn.cursor()
 
-# Tabellen erstellen, falls nicht vorhanden
+# Tabelle erstellen, falls nicht vorhanden
 cursor.execute('''CREATE TABLE IF NOT EXISTS etiketten_count (
                   id INTEGER PRIMARY KEY,
                   count INTEGER NOT NULL DEFAULT 0
                 )''')
+
 cursor.execute('''CREATE TABLE IF NOT EXISTS processed_labels (
                   id INTEGER PRIMARY KEY AUTOINCREMENT,
                   timestamp TEXT,
                   label_count INTEGER
                 )''')
+
 conn.commit()
 
 # Initialisiere den Zähler, falls nicht vorhanden
@@ -36,6 +40,7 @@ cursor.execute('SELECT count FROM etiketten_count WHERE id = 1')
 row = cursor.fetchone()
 if row is None:
     cursor.execute('INSERT INTO etiketten_count (id, count) VALUES (1, 0)')
+
     conn.commit()
 
 def load_data_to_db(file_path, db_path):
@@ -118,3 +123,5 @@ def log_processed_labels(db_path, label_count):
     cursor.execute('INSERT INTO processed_labels (timestamp, label_count) VALUES (?, ?)', (timestamp, label_count))
     conn.commit()
     conn.close()
+    conn.commit()
+

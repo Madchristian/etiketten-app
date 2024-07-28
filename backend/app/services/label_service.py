@@ -33,6 +33,7 @@ def wrap_text(c, text, x, y, max_width, line_height, max_lines):
     return y
 
 def format_datetime(datetime_str):
+    """ Hilfsfunktion zum Formatieren von Datum und Uhrzeit """
     try:
         dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
         formatted_date = dt.strftime('%d.%m')
@@ -51,6 +52,13 @@ def create_labels(dataframe, output):
 
     dataframe = dataframe.fillna('').astype(str)
     dataframe['Auftragsnummer'] = dataframe['Auftragsnummer'].astype(str).str.split('.').str[0]
+
+
+    # Sortieren nach Annahmedatum_Uhrzeit1
+    dataframe['Annahmedatum_Uhrzeit1'] = pd.to_datetime(dataframe['Annahmedatum_Uhrzeit1'], format='%Y-%m-%d %H:%M:%S')
+    dataframe.sort_values(by='Annahmedatum_Uhrzeit1', inplace=True)
+
+    # PDF-Dokument erstellen
 
     c = canvas.Canvas(output, pagesize=A4)
     width, height = A4
@@ -106,10 +114,19 @@ def create_labels(dataframe, output):
         c.drawString(text_x, text_y, kundenname)
 
         c.setFont("Helvetica", 8)
+
         text_y -= 3.5 * mm
         formatted_annahme = format_datetime(row['Annahmedatum_Uhrzeit1'])
         formatted_fertigstellung = format_datetime(row['Fertigstellungstermin'])
         c.drawString(text_x, text_y, f"{formatted_annahme} bis {formatted_fertigstellung}")
+
+
+        text_y -= 4 * mm
+        formatted_annahme = format_datetime(row['Annahmedatum_Uhrzeit1'].strftime('%Y-%m-%d %H:%M:%S'))
+        formatted_fertigstellung = format_datetime(row['Fertigstellungstermin'])
+        c.drawString(text_x, text_y, f"{formatted_annahme} bis {formatted_fertigstellung}")
+
+        # rechtsbündige Auftragsnummer
 
         c.setFont("Helvetica-Bold", 10)
         kennzeichen = row['Amtl_Kennzeichen']
