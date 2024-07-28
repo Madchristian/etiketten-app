@@ -34,6 +34,16 @@ def wrap_text(c, text, x, y, max_width, line_height, max_lines):
         y -= line_height  # Abstand zwischen den Zeilen
     return y
 
+def format_datetime(datetime_str):
+    """ Hilfsfunktion zum Formatieren von Datum und Uhrzeit """
+    try:
+        dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
+        formatted_date = dt.strftime('%d.%m')
+        formatted_time = dt.strftime('%H:%M')
+        return f"{formatted_time} - {formatted_date}"
+    except ValueError:
+        return datetime_str
+
 def create_labels(dataframe, output):
     # Avery Zweckform Etiketten auf A4 Blatt (40 Etiketten pro Seite, 4 x 10)
     label_width = 48.5 * mm
@@ -99,7 +109,8 @@ def create_labels(dataframe, output):
 
         c.setFont("Helvetica", 8)
         text_y -= 3 * mm
-        c.drawString(text_x, text_y, f"{row['Annahmedatum_Uhrzeit1']} - {row['Fertigstellungstermin']}")
+        formatted_datetime = format_datetime(row['Annahmedatum_Uhrzeit1']) + " - " + format_datetime(row['Fertigstellungstermin'])
+        c.drawString(text_x, text_y, formatted_datetime)
 
         # Rechteck um das Kennzeichen zeichnen und rechtsbündige Auftragsnummer
         c.setFont("Helvetica-Bold", 10)
