@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - stage
+      - dev
     paths:
       - backend/**
   pull_request:
@@ -53,10 +54,14 @@ jobs:
       id: get_version
       run: echo "VERSION=$(cat backend/VERSION)" >> $GITHUB_ENV
 
+    - name: Debug GITHUB_REF
+      run: echo "GITHUB_REF is $GITHUB_REF"
+
     - name: Set Docker Tags
       run: |
-        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/backend:${{ env.VERSION }}-${{ github.ref_name }},registry.cstrube.de/etiketten-app/backend:${{ github.ref_name }}" >> $GITHUB_ENV
-        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+        BRANCH_NAME=${GITHUB_REF##*/}
+        echo "DOCKER_TAGS=registry.cstrube.de/etiketten-app/backend:${VERSION}-${BRANCH_NAME},registry.cstrube.de/etiketten-app/backend:${BRANCH_NAME}" >> $GITHUB_ENV
+        if [ "${BRANCH_NAME}" = "main" ]; then
           echo "DOCKER_TAGS=$DOCKER_TAGS,registry.cstrube.de/etiketten-app/backend:latest" >> $GITHUB_ENV
         fi
 
