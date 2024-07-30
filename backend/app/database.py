@@ -124,4 +124,3 @@ def log_processed_labels(db_path, label_count):
     conn.commit()
     conn.close()
     conn.commit()
-
