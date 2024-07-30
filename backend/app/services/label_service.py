@@ -65,6 +65,7 @@ def create_labels(dataframe, output):
     try:
         # Sortieren nach Annahmedatum_Uhrzeit1
         dataframe['Annahmedatum_Uhrzeit1'] = pd.to_datetime(dataframe['Annahmedatum_Uhrzeit1'], format='%Y-%m-%d %H:%M:%S')
+        dataframe['Fertigstellungstermin'] = pd.to_datetime(dataframe['Fertigstellungstermin'], format='%Y-%m-%d %H:%M:%S')
         dataframe.sort_values(by='Annahmedatum_Uhrzeit1', inplace=True)
     except Exception as e:
         logger.error(f"Fehler beim Sortieren der Daten: {e}")
@@ -130,9 +131,6 @@ def create_labels(dataframe, output):
             text_y -= 3.5 * mm
             formatted_annahme = format_datetime(row['Annahmedatum_Uhrzeit1'])
             formatted_fertigstellung = format_datetime(row['Fertigstellungstermin'])
-            c.drawString(text_x, text_y, f"{formatted_annahme} bis {formatted_fertigstellung}")
-
-            text_y -= 4 * mm
             c.drawString(text_x, text_y, f"{formatted_annahme} bis {formatted_fertigstellung}")
 
             # rechtsbündige Auftragsnummer
