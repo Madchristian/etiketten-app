@@ -40,7 +40,7 @@ class DataLoader:
                 Terminart TEXT,
                 Notizen_Serviceberater TEXT,
                 Auftragsnummer TEXT,
-                Direktannahme TEXT
+                Direktannahme am Fzg. TEXT
             )
         ''')
 
