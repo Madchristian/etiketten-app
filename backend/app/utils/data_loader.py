@@ -5,7 +5,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class DataLoader:
     """
     This class is responsible for loading data from a file into a SQLite database.
@@ -20,13 +19,26 @@ class DataLoader:
                 self._create_table(cursor)
                 upload_id = self._generate_upload_id()
                 df = self._read_and_prepare_data(file_path, upload_id)
+                
+                # Log der Rohdaten vor dem Filtern
+                logger.info("Rohdaten vor dem Filtern:")
+                logger.info(df.head())
+
+                # Überprüfen der einzigartigen Werte von `Terminstatus`
+                unique_status = df['Terminstatus'].unique()
+                logger.info(f"Einzigartige Werte von `Terminstatus`: {unique_status}")
+
+                # Filtern der Daten
+                df = df[df['Terminstatus'].astype(str) == '2']
+                logger.info("Daten nach dem Filtern:")
+                logger.info(df.head())
+
                 df.to_sql('etiketten', conn, if_exists='append', index=False)
                 self._log_table_structure(cursor)
         except Exception as e:
             logger.error(f"Fehler beim Laden der Daten in die Datenbank: {e}")
             raise
         return upload_id
-    
 
     def _create_table(self, cursor):
         cursor.execute('''
@@ -40,7 +52,9 @@ class DataLoader:
                 Terminart TEXT,
                 Notizen_Serviceberater TEXT,
                 Auftragsnummer TEXT,
-                Direktannahme am Fzg. TEXT
+                Direktannahme TEXT,
+                Terminstatus TEXT,
+                Modell TEXT
             )
         ''')
 
@@ -56,7 +70,9 @@ class DataLoader:
             'Fertigstellungstermin': 'Fertigstellungstermin',
             'Terminart': 'Terminart',
             'Amtl. Kennzeichen': 'Amtl_Kennzeichen',
-            'Direktannahme am Fzg.': 'Direktannahme'
+            'Direktannahme am Fzg.': 'Direktannahme',
+            'Terminstatus': 'Terminstatus',
+            'Modell': 'Modell'
         }
         df = pd.read_csv(file_path, sep='\t', usecols=columns.keys())
         df.rename(columns=columns, inplace=True)

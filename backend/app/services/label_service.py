@@ -4,9 +4,13 @@ from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from datetime import datetime
+import pytz
+import logging
+
+logger = logging.getLogger(__name__)
 
 def map_terminart(terminart, direktannahme):
-    if direktannahme == "Ja":
+    if direktannahme == "1":
         return "DIA", colors.red
     mapping = {
         'K': ('KW', colors.red),
@@ -50,6 +54,29 @@ def highlight_words(text, highlight_list):
             text = f'{word} ' + text.replace(f'<highlight>{word}</highlight>', '').strip()
     return text
 
+def limit_text(text, max_length=180):
+    if len(text) > max_length:
+        text = text[:max_length] + '...'
+    return text
+
+def draw_text_with_highlight(c, text, x, y, max_width, line_height):
+    words = text.split()
+    current_line = ""
+    current_line_width = 0
+    for word in words:
+        word_width = c.stringWidth(word + " ", "Helvetica", 7)
+        if current_line_width + word_width > max_width:
+            c.drawString(x, y, current_line)
+            y -= line_height
+            current_line = word + " "
+            current_line_width = word_width
+        else:
+            current_line += word + " "
+            current_line_width += word_width
+
+    c.drawString(x, y, current_line)
+    return y
+
 def create_labels(dataframe, output):
     label_width = 50 * mm
     label_height = 27 * mm
@@ -61,10 +88,17 @@ def create_labels(dataframe, output):
     dataframe = dataframe.fillna('').astype(str)
     dataframe['Auftragsnummer'] = dataframe['Auftragsnummer'].astype(str).str.split('.').str[0]
 
+    # Daten filtern
+    dataframe = dataframe[dataframe['Terminstatus'] == '2']
+    logger.info(f"Gefilterte Daten: {dataframe.head()}")
+
     c = canvas.Canvas(output, pagesize=A4)
     width, height = A4
 
-    current_datetime = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+    # Lokale Zeitzone verwenden
+    local_tz = pytz.timezone('Europe/Berlin')
+    current_datetime = datetime.now(local_tz).strftime("%d.%m.%Y %H:%M:%S")
+    
     total_labels = len(dataframe)
     labels_per_page = 40
     total_pages = (total_labels + labels_per_page - 1) // labels_per_page
@@ -112,16 +146,18 @@ def create_labels(dataframe, output):
         c.drawString(text_x, text_y, kundenname)
 
         c.setFont("Helvetica", 8)
-        text_y -= 4 * mm
+        text_y -= 3 * mm
         formatted_date, formatted_time = format_datetime(row['Annahmedatum_Uhrzeit1'])
         c.drawString(text_x, text_y, formatted_date)
+        date_time_width = c.stringWidth(formatted_date, "Helvetica", 8)
         c.setFont("Helvetica-Bold", 8)
         c.setFillColor(colors.red)
-        c.drawString(text_x + c.stringWidth(formatted_date, "Helvetica", 8) + 2 * mm, text_y, formatted_time)
+        c.drawString(text_x + date_time_width + 2 * mm, text_y, formatted_time)
         c.setFillColor(colors.black)
-        text_y -= 4 * mm
+
         formatted_fertigstellung, _ = format_datetime(row['Fertigstellungstermin'])
-        c.drawString(text_x, text_y, f"bis {formatted_fertigstellung}")
+        c.setFont("Helvetica", 8)
+        c.drawString(text_x + date_time_width + c.stringWidth(formatted_time, "Helvetica-Bold", 8) + 4 * mm, text_y, f"bis {formatted_fertigstellung}")
 
         c.setFont("Helvetica-Bold", 10)
         kennzeichen = row['Amtl_Kennzeichen']
@@ -137,16 +173,10 @@ def create_labels(dataframe, output):
         c.line(text_x, text_y - 5 * mm, x + label_width - 2 * mm, text_y - 5 * mm)
         c.setFont("Helvetica", 7)
         text_y -= 8 * mm
-        highlighted_notiz = highlight_words(row['Notizen_Serviceberater'], ['Wartung', 'Assyst', 'Service'])
-        words = highlighted_notiz.split()
-        for word in words:
-            if word in ['Wartung', 'Assyst', 'Service']:
-                c.setFillColor(colors.yellow)
-                c.setFont("Helvetica-Bold", 7)
-            else:
-                c.setFillColor(colors.black)
-                c.setFont("Helvetica", 7)
-            c.drawString(text_x, text_y, word)
-            text_x += c.stringWidth(word + " ", "Helvetica", 7)
+
+        limited_text = limit_text(row['Notizen_Serviceberater'])
+        highlighted_notiz = highlight_words(limited_text, ['Wartung', 'Assyst', 'Service'])
+        
+        text_y = draw_text_with_highlight(c, highlighted_notiz, text_x, text_y, label_width - 4 * mm, 7)
 
     c.save()
