@@ -38,7 +38,7 @@ function App() {
 
     try {
       console.log("Uploading file:", file);
-      const response = await axios.post('https://etiketten-staging.cstrube.de/upload/', formData, {
+      const response = await axios.post('https://etiketten.cstrube.de/upload/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
