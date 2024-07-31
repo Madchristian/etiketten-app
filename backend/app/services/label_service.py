@@ -59,7 +59,7 @@ def limit_text(text, max_length=180):
         text = text[:max_length] + '...'
     return text
 
-def split_text_into_lines(text, max_chars_per_line=40, max_lines=5):
+def split_text_into_lines(text, max_chars_per_line=35, max_lines=5):
     words = text.split()
     lines = []
     current_line = ""
@@ -91,6 +91,11 @@ def draw_text_with_highlight(c, text, x, y, max_width, line_height, margin_left)
             current_x += c.stringWidth(word + " ", "Helvetica", 7)
         y -= line_height
     return y
+
+def draw_vertical_text(c, text, x, y):
+    for char in text:
+        c.drawString(x, y, char)
+        y -= 10  # Adjust this value as needed to control the spacing between characters
 
 def create_labels(dataframe, output):
     label_width = 50 * mm
@@ -189,13 +194,14 @@ def create_labels(dataframe, output):
         c.setFont("Helvetica", 7)
         text_y -= 8 * mm
 
-        # Schreibe das Schlüsselwort fett und gelb
+        # Schreibe das Schlüsselwort vertikal, fett und gelb
         schluesselwort = row['Schluesselwort']
         if schluesselwort:
             c.setFillColor(colors.yellow)
-            c.setFont("Helvetica-Bold", 7)
-            c.drawString(text_x, text_y, schluesselwort)
-            text_x += c.stringWidth(schluesselwort + " ", "Helvetica-Bold", 7)
+            c.setFont("Helvetica-Bold", 8)
+            vertical_text_y = text_y + (len(schluesselwort) * 10) - 35
+            draw_vertical_text(c, schluesselwort, text_x, vertical_text_y)
+            text_x += 4 * mm  # Adjust as needed to control spacing after vertical text
             c.setFillColor(colors.black)
             c.setFont("Helvetica", 7)
 
