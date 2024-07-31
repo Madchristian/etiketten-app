@@ -175,9 +175,14 @@ def create_labels(dataframe, output):
         c.drawString(text_x + date_time_width + 2 * mm, text_y, formatted_time)
         c.setFillColor(colors.black)
 
-        formatted_fertigstellung, _ = format_datetime(row['Fertigstellungstermin'])
+        formatted_fertigstellung, fertigstellung_time = format_datetime(row['Fertigstellungstermin'])
         c.setFont("Helvetica", 8)
+        fertigstellung_width = c.stringWidth(f"bis {formatted_fertigstellung}", "Helvetica", 8)
         c.drawString(text_x + date_time_width + c.stringWidth(formatted_time, "Helvetica-Bold", 8) + 4 * mm, text_y, f"bis {formatted_fertigstellung}")
+        c.setFont("Helvetica-Bold", 8)
+        c.setFillColor(colors.red)
+        c.drawString(text_x + date_time_width + c.stringWidth(formatted_time, "Helvetica-Bold", 8) + 4 * mm + fertigstellung_width + 2 * mm, text_y, fertigstellung_time)
+        c.setFillColor(colors.black)
 
         c.setFont("Helvetica-Bold", 10)
         kennzeichen = row['Amtl_Kennzeichen']
