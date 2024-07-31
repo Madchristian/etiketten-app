@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from starlette.responses import JSONResponse
 import os
-from ..database import cursor, db_path
+from app.database import cursor, DB_PATH
 
 router = APIRouter()
 

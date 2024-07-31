@@ -82,3 +82,36 @@ footer {
   padding: 1rem;
   margin-top: 2rem;
 }
+
+.matrix {
+  display: grid;
+  grid-template-rows: repeat(10, 25px);
+  gap: 5px;
+  margin-top: 20px;
+}
+
+.matrix-row {
+  display: grid;
+  grid-template-columns: repeat(4, 50px);
+  gap: 5px;
+}
+
+.matrix-cell {
+  width: 50px;
+  height: 25px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s;
+}
+
+.matrix-cell.selected {
+  background-color: #00f;
+  color: #fff;
+}
+
+.matrix-cell:hover {
+  background-color: #ddd;
+}

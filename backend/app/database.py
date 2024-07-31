@@ -1,10 +1,6 @@
-"""
-Dieses Modul ist für die Initialisierung der Datenbank zuständig.
-"""
-
-import logging
-import os
 import sqlite3
+import os
+import logging
 
 # Logging konfigurieren
 logging.basicConfig(level=logging.INFO)
@@ -90,6 +86,10 @@ class DatabaseInitializer:
         except sqlite3.Error as e:
             logger.error("Fehler beim Auflisten der Tabellen: %s", e)
             raise
+
+# Verbindung und Cursor erstellen
+conn = sqlite3.connect(DB_PATH)
+cursor = conn.cursor()
 
 # Hauptinitialisierung der Datenbank
 if __name__ == "__main__":

@@ -92,9 +92,7 @@ def draw_datetime_with_colored_time(c, datetime_str, x, y):
     return y
 
 
-def create_labels(dataframe, output):
-    """
-    Create labels for each row in the dataframe and save them to a PDF file."""
+def create_labels(dataframe, output, start_row=0, start_col=0):
     label_width = 50 * mm
     label_height = 27 * mm
     margin_left = 5 * mm
@@ -121,14 +119,26 @@ def create_labels(dataframe, output):
     page_number = 1
     draw_header(c, page_number, total_pages)
 
+    label_count = 0
     for index, row in dataframe.iterrows():
-        if index > 0 and index % labels_per_page == 0:
+        if index == 0:
+            col = start_col
+            row_num = start_row
+        else:
+            col = (label_count + start_col) % 4
+            row_num = (label_count + start_col) // 4 + start_row
+            if row_num >= 10:
+                row_num = row_num % 10
+                col = (label_count + start_col) % 4
+                if (label_count + start_col) // 4 >= 10:
+                    page_number += 1
+                    draw_header(c, page_number, total_pages)
+
+        if index > 0 and (label_count + start_col) % labels_per_page == 0:
             c.showPage()
             page_number += 1
             draw_header(c, page_number, total_pages)
 
-        col = index % 4
-        row_num = (index // 4) % 10
         x = margin_left + col * (label_width + h_space)
         y = height - margin_top - (row_num + 1) * label_height - row_num * v_space
 
@@ -138,6 +148,7 @@ def create_labels(dataframe, output):
 
         text_x = x + 2 * mm
         text_y = y + label_height - 4 * mm
+
         terminart_abkuerzung, color = map_terminart(row['Terminart'], row['Direktannahme'])
 
         max_name_length = 21
@@ -156,10 +167,22 @@ def create_labels(dataframe, output):
 
         c.setFont("Helvetica", 8)
         text_y -= 4 * mm
-        text_y = draw_datetime_with_colored_time(c, row['Annahmedatum_Uhrzeit1'], text_x, text_y)
-        formatted_fertigstellung = format_datetime(row['Fertigstellungstermin'])[0]
-        c.setFillColor(colors.black)
-        c.drawString(text_x, text_y - 4 * mm, f" bis {formatted_fertigstellung}")
+        formatted_annahme = format_datetime(row['Annahmedatum_Uhrzeit1'])
+        formatted_fertigstellung = format_datetime(row['Fertigstellungstermin'])
+
+        if formatted_annahme and ' ' in formatted_annahme:
+            date_part, time_part = formatted_annahme.split(' ')
+            c.drawString(text_x, text_y, date_part)
+            text_width = c.stringWidth(date_part, "Helvetica", 8)
+            c.setFont("Helvetica-Bold", 8)
+            c.setFillColor(colors.red)
+            c.drawString(text_x + text_width + 2, text_y, time_part)
+            c.setFillColor(colors.black)
+            c.setFont("Helvetica", 8)
+            text_y -= 4 * mm
+        else:
+            c.drawString(text_x, text_y, f"{formatted_annahme} bis {formatted_fertigstellung}")
+            text_y -= 4 * mm
 
         c.setFont("Helvetica-Bold", 10)
         kennzeichen = row['Amtl_Kennzeichen']
@@ -168,14 +191,4 @@ def create_labels(dataframe, output):
         auftragsnummer_width = c.stringWidth(auftragsnummer, "Helvetica-Bold", 10)
         space_between = label_width - (kennzeichen_width + auftragsnummer_width + 4 * mm)
 
-        c.drawString(text_x, text_y - 4 * mm, kennzeichen)
-        c.drawRightString(x + label_width - 2 * mm, text_y - 4 * mm, auftragsnummer)
-
-        c.setLineWidth(0.5)
-        c.line(text_x, text_y - 5 * mm, x + label_width - 2 * mm, text_y - 5 * mm)
-        c.setFont("Helvetica", 7)
-        text_y -= 8 * mm
-        highlighted_notiz = highlight_words(row['Notizen_Serviceberater'], ['Wartung', 'Assyst'])
-        text_y = draw_highlighted_text(c, highlighted_notiz, text_x, text_y, label_width - 3 * mm, line_height=7, max_lines=5)
-
-    c.save()
+        c.draw
