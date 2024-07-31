@@ -1,12 +1,15 @@
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import StreamingResponse
-import pandas as pd
-from app.services.label_service import create_labels
 from io import BytesIO
 from uuid import uuid4
 import os
 from datetime import datetime
-from ..database import load_data_to_db, get_sorted_data, delete_data_by_upload_id, db_path, log_processed_labels
+from app.services.label_service import create_labels
+from app.utils.data_loader import DataLoader
+from app.utils.data_retriever import DataRetriever
+from app.utils.data_deleter import DataDeleter
+from app.utils.process_logger import ProcessLogger
+from app.database import DB_PATH as db_path
 import logging
 
 router = APIRouter()
@@ -20,6 +23,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
+    """
+    Diese Route lädt eine Datei hoch, verarbeitet die Daten 
+    und gibt ein PDF mit Terminetiketten zurück
+    """
     try:
         # Generiere eine eindeutige ID für diese Datei
         file_id = str(uuid4())
@@ -32,12 +39,14 @@ async def upload_file(file: UploadFile = File(...)):
         logger.info(f"Datei hochgeladen und gespeichert unter: {file_location}")
 
         # Lade die Daten in die Datenbank und erhalte die upload_id
-        upload_id = load_data_to_db(file_location, db_path)
-        logger.info(f"Daten in die Datenbank geladen mit upload_id: {upload_id}")
+        data_loader = DataLoader(db_path)
+        upload_id = data_loader.load_data(file_location)
+        logger.info("Daten in die Datenbank %s geladen", db_path)
 
         # Sortiere die Daten aus der Datenbank
-        df = get_sorted_data(db_path, upload_id)
-        logger.info(f"Erste Zeilen der sortierten DataFrame:")
+        data_retriever = DataRetriever(db_path)
+        df = data_retriever.get_sorted_data(upload_id)
+        logger.info("Daten aus der Datenbank sortiert:")
         logger.info(df.head())
 
         # Erstelle die Labels und speichere sie im BytesIO-Objekt
@@ -46,12 +55,14 @@ async def upload_file(file: UploadFile = File(...)):
         output.seek(0)
 
         # Lösche die Einträge aus der Datenbank und die temporäre Datei
-        delete_data_by_upload_id(db_path, upload_id)
+        data_deleter = DataDeleter(db_path)
+        data_deleter.delete_data_by_upload_id(upload_id)
         os.remove(file_location)
         logger.info(f"Einträge mit upload_id '{upload_id}' aus der Datenbank gelöscht und temporäre Datei '{file_location}' gelöscht")
 
         # Logge die Anzahl der verarbeiteten Labels
-        log_processed_labels(db_path, len(df))
+        process_logger = ProcessLogger(db_path)
+        process_logger.log_processed_labels(len(df))
 
         # Verwende StreamingResponse, um die PDF-Datei zurückzugeben
         headers = {
@@ -60,5 +71,5 @@ async def upload_file(file: UploadFile = File(...)):
         return StreamingResponse(output, media_type="application/pdf", headers=headers)
     
     except Exception as e:
-        logger.error(f"Fehler beim Hochladen der Datei und Verarbeiten der Labels: {e}")
+        logger.error("Fehler beim Verarbeiten der Datei: %s", e)
         return {"error": "Fehler beim Verarbeiten der Datei"}
