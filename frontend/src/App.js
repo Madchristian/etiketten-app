@@ -6,7 +6,6 @@ function App() {
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [startPosition, setStartPosition] = useState({ row: 0, col: 0 });
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -27,6 +26,7 @@ function App() {
 
   const handleUpload = async (event) => {
     event.preventDefault();
+    console.log("Upload button clicked");
     if (!file) {
       console.error("No file selected");
       setErrorMessage('Bitte wählen Sie eine Datei aus.');
@@ -35,11 +35,13 @@ function App() {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('start_position', JSON.stringify(startPosition));
 
     try {
       console.log("Uploading file:", file);
-      const response = await axios.post('https://etiketten.cstrube.de/upload/', formData, {
+      const response = await axios.post('https://etiketten-staging.cstrube.de/upload/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
         responseType: 'blob',
       });
       console.log("Upload successful:", response);
@@ -60,6 +62,7 @@ function App() {
       document.body.appendChild(link);
       link.click();
 
+      // Reset file input after successful upload
       setFile(null);
       document.getElementById('file-input').value = '';
     } catch (error) {
@@ -97,10 +100,6 @@ function App() {
     }
   };
 
-  const handleCellClick = (row, col) => {
-    setStartPosition({ row, col });
-  };
-
   return (
     <div className="App">
       <header>
@@ -111,7 +110,7 @@ function App() {
         <section className="description">
           <h2>Was macht diese App?</h2>
           <p>
-          Diese Anwendung generiert aus einer Datei im Format Termine (TAB).txt ein PDF-Dokument mit Etiketten, die auf Schlüsselanhänger aufgeklebt werden können. Für diesen Zweck verwenden Sie bitte Avery Zweckform Typ 3657 “49x25”. Um die Datei zu erstellen, wählen Sie in unserem TKP Planer die Option “Exportieren - Termine (TAB getrennt)” und laden Sie die heruntergeladene Datei hier hoch.
+            Diese Anwendung generiert aus einer Datei im Format Termine (TAB).txt ein PDF-Dokument mit Etiketten, die auf Schlüsselanhänger aufgeklebt werden können. Für diesen Zweck verwenden Sie bitte Avery Zweckform Typ 3657 “49x25”. Um die Datei zu erstellen, wählen Sie in unserem TKP Planer die Option “Exportieren - Termine (TAB getrennt)” und laden Sie die heruntergeladene Datei hier hoch.
           </p>
         </section>
         <section className="upload-section">
@@ -128,19 +127,6 @@ function App() {
             >
               {file ? `Selected file: ${file.name}` : 'Ziehen Sie die TXT-Datei hierher oder klicken Sie, um sie hochzuladen'}
               <input type="file" name="file" id="file-input" style={{ display: 'none' }} onChange={handleFileChange} />
-            </div>
-            <div className="matrix">
-              {Array.from({ length: 10 }).map((_, row) => (
-                <div key={row} className="matrix-row">
-                  {Array.from({ length: 4 }).map((_, col) => (
-                    <div 
-                      key={col} 
-                      className={`matrix-cell ${startPosition.row === row && startPosition.col === col ? 'selected' : ''}`} 
-                      onClick={() => handleCellClick(row, col)}
-                    />
-                  ))}
-                </div>
-              ))}
             </div>
             <button type="submit">Etiketten erstellen</button>
           </form>

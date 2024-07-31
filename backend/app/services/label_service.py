@@ -1,13 +1,11 @@
+import pandas as pd
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from datetime import datetime
 
-
 def map_terminart(terminart, direktannahme):
-    """
-    """
     if direktannahme == "Ja":
         return "DIA", colors.red
     mapping = {
@@ -17,11 +15,7 @@ def map_terminart(terminart, direktannahme):
     }
     return mapping.get(terminart, ('', colors.black))
 
-
 def wrap_text(c, text, x, y, max_width, line_height, max_lines):
-    """
-    Wrap text to fit in a given width and height.
-    """
     words = text.split(' ')
     lines = []
     line = []
@@ -40,59 +34,23 @@ def wrap_text(c, text, x, y, max_width, line_height, max_lines):
         y -= line_height
     return y
 
-
 def format_datetime(datetime_str):
     try:
         dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
         formatted_date = dt.strftime('%d.%m')
         formatted_time = dt.strftime('%H:%M')
-        return f"{formatted_date} {formatted_time}", formatted_time
+        return formatted_date, formatted_time
     except ValueError:
-        return datetime_str, ""
-
+        return datetime_str, ''
 
 def highlight_words(text, highlight_list):
     for word in highlight_list:
         if word in text:
-            text = text.replace(word, f"<yellow>{word}</yellow>")
+            text = text.replace(word, f'<highlight>{word}</highlight>')
+            text = f'{word} ' + text.replace(f'<highlight>{word}</highlight>', '').strip()
     return text
 
-
-def draw_highlighted_text(c, text, x, y, max_width, line_height, max_lines):
-    """
-    Draw text with highlighted words in yellow."""
-    parts = text.split('<yellow>')
-    for part in parts:
-        if '</yellow>' in part:
-            normal_text, highlighted_text = part.split('</yellow>')
-            y = wrap_text(c, normal_text, x, y, max_width, line_height, max_lines)
-            c.setFillColor(colors.yellow)
-            y = wrap_text(c, highlighted_text, x, y, max_width, line_height, max_lines)
-            c.setFillColor(colors.black)
-        else:
-            y = wrap_text(c, part, x, y, max_width, line_height, max_lines)
-    return y
-
-
-def draw_datetime_with_colored_time(c, datetime_str, x, y):
-    """
-    Draw a datetime string with the date part in black and the time part in red."""
-    formatted_datetime, time_part = format_datetime(datetime_str)
-    date_part = formatted_datetime.replace(time_part, "").strip()
-
-    c.setFont("Helvetica", 8)
-    c.setFillColor(colors.black)
-    c.drawString(x, y, date_part)
-
-    time_x = x + c.stringWidth(date_part + " ", "Helvetica", 8)
-    c.setFont("Helvetica-Bold", 8)
-    c.setFillColor(colors.red)
-    c.drawString(time_x, y, time_part)
-
-    return y
-
-
-def create_labels(dataframe, output, start_row=0, start_col=0):
+def create_labels(dataframe, output):
     label_width = 50 * mm
     label_height = 27 * mm
     margin_left = 5 * mm
@@ -119,26 +77,14 @@ def create_labels(dataframe, output, start_row=0, start_col=0):
     page_number = 1
     draw_header(c, page_number, total_pages)
 
-    label_count = 0
     for index, row in dataframe.iterrows():
-        if index == 0:
-            col = start_col
-            row_num = start_row
-        else:
-            col = (label_count + start_col) % 4
-            row_num = (label_count + start_col) // 4 + start_row
-            if row_num >= 10:
-                row_num = row_num % 10
-                col = (label_count + start_col) % 4
-                if (label_count + start_col) // 4 >= 10:
-                    page_number += 1
-                    draw_header(c, page_number, total_pages)
-
-        if index > 0 and (label_count + start_col) % labels_per_page == 0:
+        if index > 0 and index % labels_per_page == 0:
             c.showPage()
             page_number += 1
             draw_header(c, page_number, total_pages)
 
+        col = index % 4
+        row_num = (index // 4) % 10
         x = margin_left + col * (label_width + h_space)
         y = height - margin_top - (row_num + 1) * label_height - row_num * v_space
 
@@ -167,22 +113,15 @@ def create_labels(dataframe, output, start_row=0, start_col=0):
 
         c.setFont("Helvetica", 8)
         text_y -= 4 * mm
-        formatted_annahme = format_datetime(row['Annahmedatum_Uhrzeit1'])
-        formatted_fertigstellung = format_datetime(row['Fertigstellungstermin'])
-
-        if formatted_annahme and ' ' in formatted_annahme:
-            date_part, time_part = formatted_annahme.split(' ')
-            c.drawString(text_x, text_y, date_part)
-            text_width = c.stringWidth(date_part, "Helvetica", 8)
-            c.setFont("Helvetica-Bold", 8)
-            c.setFillColor(colors.red)
-            c.drawString(text_x + text_width + 2, text_y, time_part)
-            c.setFillColor(colors.black)
-            c.setFont("Helvetica", 8)
-            text_y -= 4 * mm
-        else:
-            c.drawString(text_x, text_y, f"{formatted_annahme} bis {formatted_fertigstellung}")
-            text_y -= 4 * mm
+        formatted_date, formatted_time = format_datetime(row['Annahmedatum_Uhrzeit1'])
+        c.drawString(text_x, text_y, formatted_date)
+        c.setFont("Helvetica-Bold", 8)
+        c.setFillColor(colors.red)
+        c.drawString(text_x + c.stringWidth(formatted_date, "Helvetica", 8) + 2 * mm, text_y, formatted_time)
+        c.setFillColor(colors.black)
+        text_y -= 4 * mm
+        formatted_fertigstellung, _ = format_datetime(row['Fertigstellungstermin'])
+        c.drawString(text_x, text_y, f"bis {formatted_fertigstellung}")
 
         c.setFont("Helvetica-Bold", 10)
         kennzeichen = row['Amtl_Kennzeichen']
@@ -191,4 +130,23 @@ def create_labels(dataframe, output, start_row=0, start_col=0):
         auftragsnummer_width = c.stringWidth(auftragsnummer, "Helvetica-Bold", 10)
         space_between = label_width - (kennzeichen_width + auftragsnummer_width + 4 * mm)
 
-        c.draw
+        c.drawString(text_x, text_y - 4 * mm, kennzeichen)
+        c.drawRightString(x + label_width - 2 * mm, text_y - 4 * mm, auftragsnummer)
+
+        c.setLineWidth(0.5)
+        c.line(text_x, text_y - 5 * mm, x + label_width - 2 * mm, text_y - 5 * mm)
+        c.setFont("Helvetica", 7)
+        text_y -= 8 * mm
+        highlighted_notiz = highlight_words(row['Notizen_Serviceberater'], ['Wartung', 'Assyst', 'Service'])
+        words = highlighted_notiz.split()
+        for word in words:
+            if word in ['Wartung', 'Assyst', 'Service']:
+                c.setFillColor(colors.yellow)
+                c.setFont("Helvetica-Bold", 7)
+            else:
+                c.setFillColor(colors.black)
+                c.setFont("Helvetica", 7)
+            c.drawString(text_x, text_y, word)
+            text_x += c.stringWidth(word + " ", "Helvetica", 7)
+
+    c.save()

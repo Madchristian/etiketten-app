@@ -1,6 +1,5 @@
-from fastapi import APIRouter, File, UploadFile, Body
+from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
 from io import BytesIO
 from uuid import uuid4
 import os
@@ -10,6 +9,7 @@ from app.utils.data_loader import DataLoader
 from app.utils.data_retriever import DataRetriever
 from app.utils.data_deleter import DataDeleter
 from app.utils.process_logger import ProcessLogger
+from app.utils.data_preprocessor import DataPreprocessor
 from app.database import DB_PATH as db_path
 import logging
 
@@ -22,13 +22,13 @@ logger = logging.getLogger(__name__)
 UPLOAD_DIR = "files"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-class LabelPosition(BaseModel):
-    row: int
-    col: int
-
 @router.post("/upload/")
-async def upload_file(file: UploadFile = File(...), start_position: LabelPosition = Body(...)):
+async def upload_file(file: UploadFile = File(...)):
     try:
+        logger.info(f"Dateiname: {file.filename}")
+        logger.info(f"Dateityp: {file.content_type}")
+        logger.info(f"Dateigröße: {file.size}")
+        
         file_id = str(uuid4())
         file_extension = os.path.splitext(file.filename)[1]
         file_location = f"{UPLOAD_DIR}/{file_id}{file_extension}"
@@ -41,13 +41,16 @@ async def upload_file(file: UploadFile = File(...), start_position: LabelPositio
         upload_id = data_loader.load_data(file_location)
         logger.info("Daten in die Datenbank %s geladen", db_path)
 
+        DataPreprocessor.preprocess_data(db_path)
+        logger.info("Datenbank vorverarbeitet")
+        
         data_retriever = DataRetriever(db_path)
         df = data_retriever.get_sorted_data(upload_id)
         logger.info("Daten aus der Datenbank sortiert:")
         logger.info(df.head())
 
         output = BytesIO()
-        create_labels(df, output, start_position.row, start_position.col)
+        create_labels(df, output)
         output.seek(0)
 
         data_deleter = DataDeleter(db_path)
