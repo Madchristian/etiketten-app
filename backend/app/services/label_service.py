@@ -59,22 +59,37 @@ def limit_text(text, max_length=180):
         text = text[:max_length] + '...'
     return text
 
-def draw_text_with_highlight(c, text, x, y, max_width, line_height):
+def split_text_into_lines(text, max_chars_per_line=40, max_lines=5):
     words = text.split()
+    lines = []
     current_line = ""
-    current_line_width = 0
     for word in words:
-        word_width = c.stringWidth(word + " ", "Helvetica", 7)
-        if current_line_width + word_width > max_width:
-            c.drawString(x, y, current_line)
-            y -= line_height
-            current_line = word + " "
-            current_line_width = word_width
+        if len(current_line) + len(word) + 1 <= max_chars_per_line:
+            current_line += (word + " ")
         else:
-            current_line += word + " "
-            current_line_width += word_width
+            lines.append(current_line.strip())
+            current_line = word + " "
+            if len(lines) == max_lines - 1:
+                break
+    lines.append(current_line.strip())
+    return lines[:max_lines]
 
-    c.drawString(x, y, current_line)
+def draw_text_with_highlight(c, text, x, y, max_width, line_height, margin_left):
+    lines = split_text_into_lines(text)
+    for line in lines:
+        words = line.split()
+        current_x = x
+        for word in words:
+            if word.startswith('<highlight>') and word.endswith('</highlight>'):
+                word = word.replace('<highlight>', '')
+                c.setFillColor(colors.yellow)
+                c.setFont("Helvetica-Bold", 7)
+            else:
+                c.setFillColor(colors.black)
+                c.setFont("Helvetica", 7)
+            c.drawString(current_x, y, word + " ")
+            current_x += c.stringWidth(word + " ", "Helvetica", 7)
+        y -= line_height
     return y
 
 def create_labels(dataframe, output):
@@ -174,9 +189,17 @@ def create_labels(dataframe, output):
         c.setFont("Helvetica", 7)
         text_y -= 8 * mm
 
+        # Schreibe das Schlüsselwort fett und gelb
+        schluesselwort = row['Schluesselwort']
+        if schluesselwort:
+            c.setFillColor(colors.yellow)
+            c.setFont("Helvetica-Bold", 7)
+            c.drawString(text_x, text_y, schluesselwort)
+            text_x += c.stringWidth(schluesselwort + " ", "Helvetica-Bold", 7)
+            c.setFillColor(colors.black)
+            c.setFont("Helvetica", 7)
+
         limited_text = limit_text(row['Notizen_Serviceberater'])
-        highlighted_notiz = highlight_words(limited_text, ['Wartung', 'Assyst', 'Service'])
-        
-        text_y = draw_text_with_highlight(c, highlighted_notiz, text_x, text_y, label_width - 4 * mm, 7)
+        text_y = draw_text_with_highlight(c, limited_text, text_x, text_y, label_width - 4 * mm, 7, margin_left)
 
     c.save()

@@ -10,19 +10,23 @@ class DataPreprocessor:
             with sqlite3.connect(db_path) as conn:
                 cursor = conn.cursor()
                 
+                # Neue Spalte für Schlüsselwörter hinzufügen, wenn sie nicht existiert
+                cursor.execute("ALTER TABLE etiketten ADD COLUMN IF NOT EXISTS Schluesselwort TEXT DEFAULT ''")
+
                 # Setze Standardwert für Fertigstellungstermin, wenn leer
                 cursor.execute("UPDATE etiketten SET Fertigstellungstermin = '-' WHERE Fertigstellungstermin IS NULL OR Fertigstellungstermin = ''")
                 
-                # Manipuliere Notizen, um wichtige Wörter nach vorne zu setzen
+                # Übertragen der Schlüsselwörter in die neue Spalte
                 cursor.execute("""
                     UPDATE etiketten
-                    SET Notizen_Serviceberater = CASE
-                        WHEN Notizen_Serviceberater LIKE '%Wartung%' THEN 'Wartung ' || Notizen_Serviceberater
-                        WHEN Notizen_Serviceberater LIKE '%Assyst%' THEN 'Assyst ' || Notizen_Serviceberater
-                        WHEN Notizen_Serviceberater LIKE '%Service%' THEN 'Service ' || Notizen_Serviceberater
-                        ELSE Notizen_Serviceberater
+                    SET Schluesselwort = CASE
+                        WHEN Notizen_Serviceberater LIKE '%Assyst%' THEN 'W'
+                        WHEN Notizen_Serviceberater LIKE '%Wartung%' THEN 'W'
+                        WHEN Notizen_Serviceberater LIKE '%Service%' THEN 'W'
+                        ELSE ''
                     END
                 """)
+                
                 conn.commit()
         except sqlite3.Error as e:
             print(f"Fehler bei der Datenvorverarbeitung: {e}")
