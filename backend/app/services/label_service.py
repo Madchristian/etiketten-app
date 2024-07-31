@@ -1,11 +1,13 @@
-import pandas as pd
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from datetime import datetime
 
+
 def map_terminart(terminart, direktannahme):
+    """
+    """
     if direktannahme == "Ja":
         return "DIA", colors.red
     mapping = {
@@ -14,6 +16,7 @@ def map_terminart(terminart, direktannahme):
         'R': ('', colors.black)
     }
     return mapping.get(terminart, ('', colors.black))
+
 
 def wrap_text(c, text, x, y, max_width, line_height, max_lines):
     """
@@ -56,6 +59,8 @@ def highlight_words(text, highlight_list):
 
 
 def draw_highlighted_text(c, text, x, y, max_width, line_height, max_lines):
+    """
+    Draw text with highlighted words in yellow."""
     parts = text.split('<yellow>')
     for part in parts:
         if '</yellow>' in part:
@@ -70,6 +75,8 @@ def draw_highlighted_text(c, text, x, y, max_width, line_height, max_lines):
 
 
 def draw_datetime_with_colored_time(c, datetime_str, x, y):
+    """
+    Draw a datetime string with the date part in black and the time part in red."""
     formatted_datetime, time_part = format_datetime(datetime_str)
     date_part = formatted_datetime.replace(time_part, "").strip()
 
@@ -86,6 +93,8 @@ def draw_datetime_with_colored_time(c, datetime_str, x, y):
 
 
 def create_labels(dataframe, output):
+    """
+    Create labels for each row in the dataframe and save them to a PDF file."""
     label_width = 50 * mm
     label_height = 27 * mm
     margin_left = 5 * mm
