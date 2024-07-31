@@ -5,11 +5,19 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
+import sqlite3
+import os
+import uuid
+from fastapi import APIRouter, File, UploadFile
+from fastapi.responses import StreamingResponse
+from io import BytesIO
+from ..database import load_data_to_db, get_sorted_data, delete_data_by_upload_id, db_path, log_processed_labels
 
 # Logging konfigurieren
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Dictionary zur Mapping von Terminarten
 def map_terminart(terminart):
     mapping = {
         'K': 'KW',
@@ -18,6 +26,7 @@ def map_terminart(terminart):
     }
     return mapping.get(terminart, '')
 
+# Funktion zum Umbruch von Text
 def wrap_text(c, text, x, y, max_width, line_height, max_lines):
     words = text.split(' ')
     lines = []
@@ -37,8 +46,8 @@ def wrap_text(c, text, x, y, max_width, line_height, max_lines):
         y -= line_height
     return y
 
+# Hilfsfunktion zum Formatieren von Datum und Uhrzeit
 def format_datetime(datetime_obj):
-    """ Hilfsfunktion zum Formatieren von Datum und Uhrzeit """
     try:
         if isinstance(datetime_obj, pd.Timestamp):
             datetime_obj = datetime_obj.to_pydatetime()  # Konvertiere zu datetime.datetime
@@ -51,25 +60,19 @@ def format_datetime(datetime_obj):
         logger.error(f"Fehler beim Formatieren des Datums: {e}")
         return datetime_obj
 
+
+# Funktion zum Erstellen von Labels
 def create_labels(dataframe, output):
-    label_width = 48.5 * mm
+    # Maße der Labels
+    label_width = 49 * mm
     label_height = 26 * mm
-    margin_left = 8 * mm
-    margin_top = 18.5 * mm
+    margin_left = 7 * mm
+    margin_top = 18 * mm
     h_space = 0 * mm
     v_space = 0 * mm
 
     dataframe = dataframe.fillna('').astype(str)
     dataframe['Auftragsnummer'] = dataframe['Auftragsnummer'].astype(str).str.split('.').str[0]
-
-    try:
-        # Sortieren nach Annahmedatum_Uhrzeit1
-        dataframe['Annahmedatum_Uhrzeit1'] = pd.to_datetime(dataframe['Annahmedatum_Uhrzeit1'], format='%Y-%m-%d %H:%M:%S')
-        dataframe['Fertigstellungstermin'] = pd.to_datetime(dataframe['Fertigstellungstermin'], format='%Y-%m-%d %H:%M:%S')
-        dataframe.sort_values(by='Annahmedatum_Uhrzeit1', inplace=True)
-    except Exception as e:
-        logger.error(f"Fehler beim Sortieren der Daten: {e}")
-        return
 
     try:
         # PDF-Dokument erstellen
@@ -81,6 +84,7 @@ def create_labels(dataframe, output):
         labels_per_page = 40
         total_pages = (total_labels + labels_per_page - 1) // labels_per_page
 
+        # Funktion zum Zeichnen des Headers
         def draw_header(c, page_number, total_pages):
             c.setFont("Helvetica", 10)
             c.drawString(margin_left, height - 10 * mm, f"Erstellt am: {current_datetime}")
