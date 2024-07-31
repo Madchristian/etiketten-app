@@ -53,9 +53,9 @@ def format_datetime(datetime_obj):
 
 def create_labels(dataframe, output):
     label_width = 48.5 * mm
-    label_height = 25.4 * mm
+    label_height = 26 * mm
     margin_left = 8 * mm
-    margin_top = 21.5 * mm
+    margin_top = 18.5 * mm
     h_space = 0 * mm
     v_space = 0 * mm
 
