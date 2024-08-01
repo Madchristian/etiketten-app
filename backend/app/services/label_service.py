@@ -103,8 +103,8 @@ def draw_vertical_text(c, text, x, y):
 def create_labels(dataframe, output):
     label_width = 49 * mm
     label_height = 26 * mm
-    margin_left = 5 * mm
-    margin_top = 18 * mm
+    margin_left = 7 * mm
+    margin_top = 21 * mm
     h_space = 0 * mm
     v_space = 0 * mm
 
