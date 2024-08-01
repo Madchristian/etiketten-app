@@ -196,7 +196,8 @@ def create_labels(dataframe, output):
 
         c.setLineWidth(0.5)
         c.line(text_x, text_y - 5 * mm, x + label_width - 2 * mm, text_y - 5 * mm)
-        c.setFont("Helvetica", 7)
+        
+        c.setFont("Helvetica", 8)
         text_y -= 8 * mm
 
         schluesselwort = row['Schluesselwort']
