@@ -51,6 +51,7 @@ class DataLoader:
                 Amtl_Kennzeichen TEXT,
                 Terminart TEXT,
                 Reparaturumfang TEXT,
+                Notizen_Serviceberater TEXT,
                 Auftragsnummer TEXT,
                 Direktannahme TEXT,
                 Terminstatus TEXT,
@@ -72,6 +73,7 @@ class DataLoader:
         columns = {
             'Auftragsnummer': 'Auftragsnummer',
             'Annahmedatum_Uhrzeit1': 'Annahmedatum_Uhrzeit1',
+            'Notizen_Serviceberater': 'Notizen_Serviceberater',
             'Reparaturumfang': 'Reparaturumfang',
             'Kundenname': 'Kundenname',
             'Fertigstellungstermin': 'Fertigstellungstermin',

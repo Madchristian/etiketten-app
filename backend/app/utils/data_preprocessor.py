@@ -1,4 +1,7 @@
 import sqlite3
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DataPreprocessor:
     """
@@ -17,14 +20,22 @@ class DataPreprocessor:
                 cursor.execute("""
                     UPDATE etiketten
                     SET Schluesselwort = CASE
-                        WHEN Reparaturumfang LIKE '%Assyst%' THEN 'WD '
-                        WHEN Reparaturumfang LIKE '%Wartung%' THEN 'WD '
-                        WHEN Reparaturumfang LIKE '%Service%' THEN 'WD '
-                        WHEN Reparaturumfang LIKE '%Inspektion%' THEN 'WD '
+                        WHEN Notizen_Serviceberater LIKE '%Assyst%' THEN 'WD '
+                        WHEN Notizen_Serviceberater LIKE '%Wartung%' THEN 'WD '
+                        WHEN Notizen_Serviceberater LIKE '%Service%' THEN 'WD '
                         ELSE ''
                     END
                 """)
+
+                # Setze Notizen_Serviceberater als Reparaturumfang, wenn Reparaturumfang vollständig in Großbuchstaben und durch Kommas getrennt ist
+                cursor.execute("""
+                    UPDATE etiketten
+                    SET Reparaturumfang = Notizen_Serviceberater
+                    WHERE Reparaturumfang = UPPER(Reparaturumfang) 
+                    AND Reparaturumfang LIKE '%,%'
+                """)
+                
                 conn.commit()
         except sqlite3.Error as e:
-            print(f"Fehler bei der Datenvorverarbeitung: {e}")
+            logger.error(f"Fehler bei der Datenvorverarbeitung: {e}")
             raise
