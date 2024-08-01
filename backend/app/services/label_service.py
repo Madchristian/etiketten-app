@@ -74,7 +74,7 @@ def split_text_into_lines(text, max_chars_per_line=30, max_lines=5):
     lines.append(current_line.strip())
     return lines[:max_lines]
 
-def draw_text_with_highlight(c, text, x, y, max_width, line_height, margin_left):
+def draw_text_with_highlight(c, text, x, y, max_width, line_height, margin_left, schluesselwort):
     lines = split_text_into_lines(text)
     for line in lines:
         words = line.split()
@@ -85,7 +85,10 @@ def draw_text_with_highlight(c, text, x, y, max_width, line_height, margin_left)
                 c.setFillColor(colors.yellow)
                 c.setFont("Helvetica-Bold", 7)
             else:
-                c.setFillColor(colors.black)
+                if schluesselwort:
+                    c.setFillColor(colors.darkgoldenrod)
+                else:
+                    c.setFillColor(colors.black)
                 c.setFont("Helvetica", 7)
             c.drawString(current_x, y, word + " ")
             current_x += c.stringWidth(word + " ", "Helvetica", 7)
@@ -206,6 +209,6 @@ def create_labels(dataframe, output):
             c.setFont("Helvetica", 8)
 
         limited_text = limit_text(row['Reparaturumfang'])
-        text_y = draw_text_with_highlight(c, limited_text, text_x, text_y, label_width - 4 * mm, 7, margin_left)
+        text_y = draw_text_with_highlight(c, limited_text, text_x, text_y, label_width - 4 * mm, 7, margin_left, schluesselwort)
 
     c.save()
