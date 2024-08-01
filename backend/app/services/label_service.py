@@ -59,7 +59,7 @@ def limit_text(text, max_length=180):
         text = text[:max_length] + '...'
     return text
 
-def split_text_into_lines(text, max_chars_per_line=35, max_lines=5):
+def split_text_into_lines(text, max_chars_per_line=30, max_lines=5):
     words = text.split()
     lines = []
     current_line = ""
@@ -98,10 +98,10 @@ def draw_vertical_text(c, text, x, y):
         y -= 10  # Adjust this value as needed to control the spacing between characters
 
 def create_labels(dataframe, output):
-    label_width = 50 * mm
-    label_height = 27 * mm
+    label_width = 49 * mm
+    label_height = 26 * mm
     margin_left = 5 * mm
-    margin_top = 14 * mm
+    margin_top = 18 * mm
     h_space = 0 * mm
     v_space = 0 * mm
 
@@ -196,7 +196,7 @@ def create_labels(dataframe, output):
 
         c.setLineWidth(0.5)
         c.line(text_x, text_y - 5 * mm, x + label_width - 2 * mm, text_y - 5 * mm)
-        
+
         c.setFont("Helvetica", 8)
         text_y -= 8 * mm
 
