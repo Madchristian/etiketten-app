@@ -199,16 +199,10 @@ def create_labels(dataframe, output):
         c.setFont("Helvetica", 7)
         text_y -= 8 * mm
 
-        # Schreibe das Schlüsselwort vertikal, fett und gelb
         schluesselwort = row['Schluesselwort']
         if schluesselwort:
-            c.setFillColor(colors.yellow)
-            c.setFont("Helvetica-Bold", 8)
-            vertical_text_y = text_y + (len(schluesselwort) * 10) - 35
-            draw_vertical_text(c, schluesselwort, text_x, vertical_text_y)
-            text_x += 4 * mm  # Adjust as needed to control spacing after vertical text
-            c.setFillColor(colors.black)
-            c.setFont("Helvetica", 7)
+            c.setFillColor(colors.darkgoldenrod)
+            c.setFont("Helvetica", 8)
 
         limited_text = limit_text(row['Reparaturumfang'])
         text_y = draw_text_with_highlight(c, limited_text, text_x, text_y, label_width - 4 * mm, 7, margin_left)
