@@ -210,7 +210,7 @@ def create_labels(dataframe, output):
             c.setFillColor(colors.black)
             c.setFont("Helvetica", 7)
 
-        limited_text = limit_text(row['Notizen_Serviceberater'])
+        limited_text = limit_text(row['Reparaturumfang'])
         text_y = draw_text_with_highlight(c, limited_text, text_x, text_y, label_width - 4 * mm, 7, margin_left)
 
     c.save()

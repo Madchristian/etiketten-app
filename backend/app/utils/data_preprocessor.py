@@ -13,13 +13,14 @@ class DataPreprocessor:
                 # Setze Standardwert für Fertigstellungstermin, wenn leer
                 cursor.execute("UPDATE etiketten SET Fertigstellungstermin = '-' WHERE Fertigstellungstermin IS NULL OR Fertigstellungstermin = ''")
 
-                # Übertragen der Schlüsselwörter in die neue Spalte und Entfernen aus den Notizen
+                # Übertragen der Schlüsselwörter in die neue Spalte
                 cursor.execute("""
                     UPDATE etiketten
                     SET Schluesselwort = CASE
-                        WHEN Notizen_Serviceberater LIKE '%Assyst%' THEN 'WD '
-                        WHEN Notizen_Serviceberater LIKE '%Wartung%' THEN 'WD '
-                        WHEN Notizen_Serviceberater LIKE '%Service%' THEN 'WD '
+                        WHEN Reparaturumfang LIKE '%Assyst%' THEN 'WD '
+                        WHEN Reparaturumfang LIKE '%Wartung%' THEN 'WD '
+                        WHEN Reparaturumfang LIKE '%Service%' THEN 'WD '
+                        WHEN Reparaturumfang LIKE '%Inspektion%' THEN 'WD '
                         ELSE ''
                     END
                 """)
