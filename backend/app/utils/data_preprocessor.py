@@ -31,8 +31,7 @@ class DataPreprocessor:
                 cursor.execute("""
                     UPDATE etiketten
                     SET Reparaturumfang = Notizen_Serviceberater
-                    WHERE Reparaturumfang = UPPER(Reparaturumfang) 
-                    AND Reparaturumfang LIKE '%,%'
+                    WHERE Reparaturumfang = UPPER(Reparaturumfang)
                 """)
                 
                 conn.commit()

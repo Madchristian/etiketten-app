@@ -166,6 +166,7 @@ def create_labels(dataframe, output):
             c.setFillColor(colors.black)
 
         c.setFont("Helvetica-Bold", 8)
+        c.setFillColor(colors.black)
         c.drawString(text_x, text_y, kundenname)
 
         c.setFont("Helvetica", 8)
