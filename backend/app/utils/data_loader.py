@@ -16,7 +16,7 @@ class DataLoader:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                self._create_table(cursor)
+                self._migrate_table(cursor)
                 upload_id = self._generate_upload_id()
                 df = self._read_and_prepare_data(file_path, upload_id)
                 
@@ -40,7 +40,7 @@ class DataLoader:
             raise
         return upload_id
 
-    def _create_table(self, cursor):
+    def _migrate_table(self, cursor):
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS etiketten (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,9 +54,16 @@ class DataLoader:
                 Auftragsnummer TEXT,
                 Direktannahme TEXT,
                 Terminstatus TEXT,
-                Modell TEXT
+                Modell TEXT,
+                Schluesselwort TEXT DEFAULT ''
             )
         ''')
+        
+        # Check if the column 'Schluesselwort' exists, if not, add it
+        cursor.execute("PRAGMA table_info(etiketten)")
+        columns = [col[1] for col in cursor.fetchall()]
+        if 'Schluesselwort' not in columns:
+            cursor.execute("ALTER TABLE etiketten ADD COLUMN Schluesselwort TEXT DEFAULT ''")
 
     def _generate_upload_id(self):
         return str(uuid.uuid4())
