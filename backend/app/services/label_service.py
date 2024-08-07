@@ -101,10 +101,12 @@ def draw_vertical_text(c, text, x, y):
         y -= 10  # Adjust this value as needed to control the spacing between characters
 
 def create_labels(dataframe, output):
-    label_width = 49 * mm
-    label_height = 26 * mm
-    margin_left = 7 * mm
-    margin_top = 19 * mm
+    """
+    Create labels for each row in the dataframe and save them to a PDF file."""
+    label_width = 49.8 * mm
+    label_height = 26.4 * mm
+    margin_left = 5 * mm
+    margin_top = 15 * mm
     h_space = 0 * mm
     v_space = 0 * mm
 
