@@ -32,7 +32,6 @@ async def get_status():
     })
 
 
-
 @router.get("/status_page")
 async def status_page(request: Request):
     # Die Daten werden vom JavaScript im Template geladen
