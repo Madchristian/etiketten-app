@@ -1,9 +1,15 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from starlette.responses import JSONResponse
+from fastapi.templating import Jinja2Templates
+
 import os
 from app.database import cursor, DB_PATH
 
 router = APIRouter()
+
+# Lade die Templates aus dem "backend/app/templates" Verzeichnis
+templates = Jinja2Templates(directory="app/templates")
+
 
 @router.get("/status")
 async def get_status():
@@ -24,3 +30,10 @@ async def get_status():
         "etiketten_count": etiketten_count,
         "processed_labels_count": processed_labels_count
     })
+
+
+
+@router.get("/status_page")
+async def status_page(request: Request):
+    # Die Daten werden vom JavaScript im Template geladen
+    return templates.TemplateResponse("status.html", {"request": request})
