@@ -17,7 +17,7 @@ services:
       - DOCKER_REGISTRY_USERNAME=${DOCKER_REGISTRY_USERNAME}
       - DOCKER_REGISTRY_PASSWORD=${DOCKER_REGISTRY_PASSWORD}
     volumes:
-      - backend-data:/app
+      - backend-data:/app/db
       - ./backend/app/.env:/app/.env:ro
     restart:
       always

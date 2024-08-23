@@ -6,7 +6,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DB_DIR = '/app'
+DB_DIR = '/app/db'
 DB_PATH = os.path.join(DB_DIR, 'etiketten.db')
 
 # Verzeichnis erstellen, falls es nicht existiert

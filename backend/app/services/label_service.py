@@ -103,8 +103,8 @@ def draw_vertical_text(c, text, x, y):
 def create_labels(dataframe, output):
     """
     Create labels for each row in the dataframe and save them to a PDF file."""
-    label_width = 48 * mm
-    label_height = 24 * mm
+    label_width = 48.5 * mm
+    label_height = 25 * mm
     margin_left = 7 * mm
     margin_top = 21 * mm
     h_space = 0 * mm
