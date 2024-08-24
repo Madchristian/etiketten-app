@@ -24,6 +24,9 @@ def create_app():
     # Datenbank initialisieren
     DatabaseInitializer.initialize(DB_PATH)
 
+    # Tabellen auflisten
+    DatabaseInitializer.list_tables(DB_PATH)
+
     # CORS Middleware konfigurieren
     app.add_middleware(
         CORSMiddleware,

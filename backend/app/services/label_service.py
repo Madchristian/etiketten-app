@@ -100,15 +100,39 @@ def draw_vertical_text(c, text, x, y):
         c.drawString(x, y, char)
         y -= 10  # Adjust this value as needed to control the spacing between characters
 
-def create_labels(dataframe, output):
+def load_label_config(cursor, config_name):
+    cursor.execute("SELECT * FROM etiketten_config WHERE name = ?", (config_name,))
+    row = cursor.fetchone()
+    if row:
+        return {
+            'label_width': row[2] * mm,
+            'label_height': row[3] * mm,
+            'margin_left': row[4] * mm,
+            'margin_top': row[5] * mm,
+            'h_space': row[6] * mm,
+            'v_space': row[7] * mm,
+            'rows': row[8],
+            'columns': row[9],
+            'max_name_length': row[10]
+        }
+    else:
+        raise ValueError(f"Label config '{config_name}' not found")
+
+def create_labels(dataframe, output, config):
     """
-    Create labels for each row in the dataframe and save them to a PDF file."""
-    label_width = 48.5 * mm
-    label_height = 25.4 * mm
-    margin_left = 7 * mm
-    margin_top = 21 * mm
-    h_space = 0 * mm
-    v_space = 0 * mm
+    Create labels for each row in the dataframe and save them to a PDF file.
+    """
+    label_width = config['label_width']
+    label_height = config['label_height']
+    margin_left = config['margin_left']
+    margin_top = config['margin_top']
+    h_space = config['h_space']
+    v_space = config['v_space']
+    max_name_length = config['max_name_length']
+    rows = config['rows']
+    columns = config['columns']
+
+    labels_per_page = rows * columns
 
     dataframe = dataframe.fillna('').astype(str)
     dataframe['Auftragsnummer'] = dataframe['Auftragsnummer'].astype(str).str.split('.').str[0]
@@ -125,7 +149,6 @@ def create_labels(dataframe, output):
     current_datetime = datetime.now(local_tz).strftime("%d.%m.%Y %H:%M:%S")
     
     total_labels = len(dataframe)
-    labels_per_page = 40
     total_pages = (total_labels + labels_per_page - 1) // labels_per_page
 
     def draw_header(c, page_number, total_pages):
@@ -142,8 +165,8 @@ def create_labels(dataframe, output):
             page_number += 1
             draw_header(c, page_number, total_pages)
 
-        col = index % 4
-        row_num = (index // 4) % 10
+        col = index % columns
+        row_num = (index // columns) % rows
         x = margin_left + col * (label_width + h_space)
         y = height - margin_top - (row_num + 1) * label_height - row_num * v_space
 
@@ -156,7 +179,6 @@ def create_labels(dataframe, output):
 
         terminart_abkuerzung, color = map_terminart(row['Terminart'], row['Direktannahme'])
 
-        max_name_length = 21
         kundenname = row['Kundenname']
         if len(kundenname) > max_name_length:
             kundenname = kundenname[:max_name_length] + '...'
@@ -195,7 +217,6 @@ def create_labels(dataframe, output):
         auftragsnummer = f"AU{row['Auftragsnummer']}"
         kennzeichen_width = c.stringWidth(kennzeichen, "Helvetica-Bold", 10)
         auftragsnummer_width = c.stringWidth(auftragsnummer, "Helvetica-Bold", 10)
-        space_between = label_width - (kennzeichen_width + auftragsnummer_width + 4 * mm)
 
         c.drawString(text_x, text_y - 4 * mm, kennzeichen)
         c.drawRightString(x + label_width - 2 * mm, text_y - 4 * mm, auftragsnummer)

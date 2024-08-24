@@ -12,6 +12,7 @@ from app.utils.process_logger import ProcessLogger
 from app.utils.data_preprocessor import DataPreprocessor
 from app.database import DB_PATH as db_path
 import logging
+import sqlite3
 
 router = APIRouter()
 
@@ -21,6 +22,40 @@ logger = logging.getLogger(__name__)
 
 UPLOAD_DIR = "files"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+def load_label_config(config_name, db_path):
+    """
+    Lädt die Etikettenkonfiguration aus der Datenbank.
+    """
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM etiketten_config WHERE name = ?", (config_name,))
+        row = cursor.fetchone()
+        if row:
+            return {
+                'label_width': row[2] * mm,
+                'label_height': row[3] * mm,
+                'margin_left': row[4] * mm,
+                'margin_top': row[5] * mm,
+                'h_space': row[6] * mm,
+                'v_space': row[7] * mm,
+                'rows': row[8],
+                'columns': row[9],
+                'max_name_length': row[10]
+            }
+        else:
+            raise ValueError(f"Label config '{config_name}' not found")
+
+@router.get("/labels")
+async def get_labels():
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM etiketten_config")
+            labels = cursor.fetchall()
+        return {"labels": [label[0] for label in labels]}
+    except Exception as e:
+        return {"error": str(e)}
 
 @router.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
@@ -49,8 +84,12 @@ async def upload_file(file: UploadFile = File(...)):
         logger.info("Daten aus der Datenbank sortiert:")
         logger.info(df.head())
 
+        # Lade die Etikettenkonfiguration
+        config_name = "Standardetikett"  # Dies könnte aus einem Parameter kommen oder in der Datenbank gespeichert sein
+        label_config = load_label_config(config_name, db_path)
+
         output = BytesIO()
-        create_labels(df, output)
+        create_labels(df, output, label_config)
         output.seek(0)
 
         data_deleter = DataDeleter(db_path)

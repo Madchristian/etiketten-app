@@ -28,19 +28,50 @@ class DatabaseInitializer:
         try:
             with sqlite3.connect(db_path) as conn:
                 cursor = conn.cursor()
+                
+                # Tabelle 'etiketten_count' erstellen
                 cursor.execute('''CREATE TABLE IF NOT EXISTS etiketten_count (
                                   id INTEGER PRIMARY KEY,
                                   count INTEGER NOT NULL DEFAULT 0
                                 )''')
+                logger.info("'etiketten_count' Tabelle erstellt oder bereits vorhanden.")
+
+                # Tabelle 'processed_labels' erstellen
                 cursor.execute('''CREATE TABLE IF NOT EXISTS processed_labels (
                                   id INTEGER PRIMARY KEY AUTOINCREMENT,
                                   timestamp TEXT,
                                   label_count INTEGER
                                 )''')
-                cursor.execute('SELECT count FROM etiketten_count WHERE id = 1')
-                row = cursor.fetchone()
-                if row is None:
-                    cursor.execute('INSERT INTO etiketten_count (id, count) VALUES (1, 0)')
+                logger.info("'processed_labels' Tabelle erstellt oder bereits vorhanden.")
+
+                # Tabelle 'etiketten_config' erstellen
+                cursor.execute('''CREATE TABLE IF NOT EXISTS etiketten_config (
+                                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                  name TEXT NOT NULL,
+                                  label_width REAL NOT NULL,
+                                  label_height REAL NOT NULL,
+                                  margin_left REAL NOT NULL,
+                                  margin_top REAL NOT NULL,
+                                  h_space REAL NOT NULL,
+                                  v_space REAL NOT NULL,
+                                  rows INTEGER NOT NULL,
+                                  columns INTEGER NOT NULL,
+                                  max_name_length INTEGER NOT NULL
+                                )''')
+                logger.info("'etiketten_config' Tabelle erstellt oder bereits vorhanden.")
+
+                # Initialeintrag für eine Standardkonfiguration
+                cursor.execute('SELECT count(*) FROM etiketten_config')
+                if cursor.fetchone()[0] == 0:
+                    cursor.execute('''INSERT INTO etiketten_config 
+                                      (name, label_width, label_height, margin_left, margin_top, 
+                                       h_space, v_space, rows, columns, max_name_length) 
+                                      VALUES 
+                                      ('Standardetikett Avery 3657', 48.5, 25.4, 7, 21, 0, 0, 10, 4, 21)''')
+                    logger.info("Standardkonfiguration in 'etiketten_config' Tabelle hinzugefügt.")
+                else:
+                    logger.info("Standardkonfiguration in 'etiketten_config' Tabelle bereits vorhanden.")
+                
                 conn.commit()
                 logger.info("Datenbank erfolgreich initialisiert.")
         except sqlite3.Error as e:
