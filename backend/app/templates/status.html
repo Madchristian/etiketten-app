@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Status Übersicht</h1>
+        <div id="status-content">
+            <p>Loading status...</p>
+        </div>
+    </div>
+
+    <script>
+        async function loadStatus() {
+            const response = await fetch('/status');
+            const data = await response.json();
+            const content = document.getElementById('status-content');
+            content.innerHTML = `
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Labels Count:</strong> ${data.labels_count}</li>
+                    <li class="list-group-item"><strong>Temporary Files Count:</strong> ${data.tmp_files_count}</li>
+                    <li class="list-group-item"><strong>Etiketten Count:</strong> ${data.etiketten_count}</li>
+                    <li class="list-group-item"><strong>Processed Labels Count:</strong> ${data.processed_labels_count}</li>
+                </ul>
+            `;
+        }
+
+        // Lade den Status, wenn die Seite geladen ist
+        document.addEventListener('DOMContentLoaded', loadStatus);
+    </script>
+</body>
+</html>
