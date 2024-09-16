@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class DataLoader:
     """
-    This class is responsible for loading data from a file into a SQLite database.
+    Diese Klasse ist verantwortlich für das Laden von Daten aus einer Datei in eine SQLite-Datenbank.
     """
     def __init__(self, db_path):
         self.db_path = db_path
@@ -19,7 +19,7 @@ class DataLoader:
                 self._migrate_table(cursor)
                 upload_id = self._generate_upload_id()
                 df = self._read_and_prepare_data(file_path, upload_id)
-                
+
                 # Log der Rohdaten vor dem Filtern
                 logger.info("Rohdaten vor dem Filtern:")
                 logger.info(df.head())
@@ -32,6 +32,11 @@ class DataLoader:
                 df = df[df['Terminstatus'].astype(str) == '2']
                 logger.info("Daten nach dem Filtern:")
                 logger.info(df.head())
+
+                # Überprüfen, ob nach dem Filtern Daten vorhanden sind
+                if df.empty:
+                    logger.error("Keine Daten nach dem Filtern vorhanden.")
+                    raise ValueError("Die Datei enthält keine gültigen Termine mit Terminstatus '2'.")
 
                 # Daten in die Datenbank schreiben
                 df.to_sql('etiketten', conn, if_exists='append', index=False)
@@ -60,7 +65,7 @@ class DataLoader:
                 Schluesselwort TEXT DEFAULT ''
             )
         ''')
-        
+
         # Überprüfen, ob die Spalte 'Schluesselwort' existiert
         cursor.execute("PRAGMA table_info(etiketten)")
         columns = [col[1] for col in cursor.fetchall()]
@@ -84,20 +89,24 @@ class DataLoader:
             'Terminstatus': 'Terminstatus',
             'Modell': 'Modell'
         }
-        
-        # CSV-Datei laden
-        df = pd.read_csv(file_path, sep='\t', usecols=columns.keys())
 
-        # Fehlende Werte durch leere Strings ersetzen
-        df = df.fillna('')
+        try:
+            # CSV-Datei laden
+            df = pd.read_csv(file_path, sep='\t', usecols=columns.keys(), dtype=str)
 
-        df.rename(columns=columns, inplace=True)
-        df['upload_id'] = upload_id
-        
-        logger.info("DataFrame Spalten nach dem Laden:")
-        logger.info(df.columns)
-        logger.info("Erste Zeilen der DataFrame:")
-        logger.info(df.head())
+            # Fehlende Werte durch leere Strings ersetzen
+            df = df.fillna('')
+
+            df.rename(columns=columns, inplace=True)
+            df['upload_id'] = upload_id
+
+            logger.info("DataFrame Spalten nach dem Laden:")
+            logger.info(df.columns)
+            logger.info("Erste Zeilen der DataFrame:")
+            logger.info(df.head())
+        except Exception as e:
+            logger.error(f"Fehler beim Lesen der Datei '{file_path}': {e}")
+            raise ValueError(f"Fehler beim Lesen der Datei: {e}")
         return df
 
     def _log_table_structure(self, cursor):
