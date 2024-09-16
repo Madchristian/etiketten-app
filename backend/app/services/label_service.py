@@ -39,13 +39,17 @@ def wrap_text(c, text, x, y, max_width, line_height, max_lines):
     return y
 
 def format_datetime(datetime_str):
-    try:
-        dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
-        formatted_date = dt.strftime('%d.%m')
-        formatted_time = dt.strftime('%H:%M')
-        return formatted_date, formatted_time
-    except ValueError:
-        return datetime_str, ''
+    date_formats = ['%d.%m.%Y %H:%M', '%Y-%m-%d %H:%M:%S']
+    for fmt in date_formats:
+        try:
+            dt = datetime.strptime(datetime_str, fmt)
+            formatted_date = dt.strftime('%d.%m')
+            formatted_time = dt.strftime('%H:%M')
+            return formatted_date, formatted_time
+        except ValueError:
+            continue
+    logger.error(f"Fehler beim Parsen des Datums: {datetime_str}")
+    return '', ''
 
 def highlight_words(text, highlight_list):
     for word in highlight_list:
