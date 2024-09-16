@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class DataPreprocessor:
     """
-    This class is responsible for preprocessing data in a SQLite database.
+    Diese Klasse ist verantwortlich für die Vorverarbeitung von Daten in einer SQLite-Datenbank.
     """
     @staticmethod
     def preprocess_data(db_path):
@@ -15,7 +15,11 @@ class DataPreprocessor:
                 cursor = conn.cursor()
 
                 # Setze Standardwert für Fertigstellungstermin, wenn leer
-                cursor.execute("UPDATE etiketten SET Fertigstellungstermin = '-' WHERE Fertigstellungstermin IS NULL OR Fertigstellungstermin = ''")
+                cursor.execute("""
+                    UPDATE etiketten 
+                    SET Fertigstellungstermin = '-' 
+                    WHERE Fertigstellungstermin IS NULL OR Fertigstellungstermin = ''
+                """)
 
                 # Übertragen der Schlüsselwörter in die neue Spalte
                 cursor.execute("""
@@ -41,7 +45,7 @@ class DataPreprocessor:
 
                 for row in rows:
                     id = row[0]
-                    reparaturumfang = row[1]
+                    reparaturumfang = row[1] if row[1] is not None else ''
 
                     # Füge Leerzeichen nach Kommas hinzu
                     updated_reparaturumfang = re.sub(r'(?<=[A-Z]),(?=[A-Z])', ', ', reparaturumfang)
