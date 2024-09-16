@@ -47,9 +47,14 @@ class DataPreprocessor:
                     id = row[0]
                     reparaturumfang = row[1] if row[1] is not None else ''
 
-                    # Füge Leerzeichen nach Kommas hinzu
-                    updated_reparaturumfang = re.sub(r'(?<=[A-Z]),(?=[A-Z])', ', ', reparaturumfang)
-                    
+                    # Inhalt der Zelle aufteilen, Duplikate entfernen und Leerzeichen nach Kommas einfügen
+                    items = [item.strip() for item in re.split(r',\s*', reparaturumfang) if item.strip()]
+                    unique_items = []
+                    for item in items:
+                        if item not in unique_items:
+                            unique_items.append(item)
+                    updated_reparaturumfang = ', '.join(unique_items)
+
                     # Aktualisiere die Zeile nur, wenn sich der Wert geändert hat
                     if updated_reparaturumfang != reparaturumfang:
                         cursor.execute("""
