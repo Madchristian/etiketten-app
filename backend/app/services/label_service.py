@@ -179,7 +179,7 @@ def create_labels(dataframe, output):
         text_y -= 3 * mm
         formatted_date, formatted_time = format_datetime(row['Annahmedatum_Uhrzeit1'])
         c.drawString(text_x, text_y, formatted_date)
-        date_time_width = c.stringWidth(formatted_date, "Helvetica", 8)
+        date_time_width = c.stringWidth(f"von {formatted_date}", "Helvetica", 8)
         c.setFont("Helvetica-Bold", 8)
         c.setFillColor(colors.red)
         c.drawString(text_x + date_time_width + 2 * mm, text_y, formatted_time)
