@@ -28,6 +28,9 @@ jobs:
         cache: 'yarn'
         cache-dependency-path: 'frontend/yarn.lock'
 
+    - name: Enable Corepack
+      run: corepack enable
+
     - name: Install dependencies
       working-directory: ./frontend    
       run: yarn install
