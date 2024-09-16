@@ -31,6 +31,12 @@ jobs:
     - name: Enable Corepack
       run: corepack enable
 
+    - name: Install Yarn
+      run: npm install -g yarn
+
+    - name: Install dependencies
+      working-directory: ./frontend    
+      run: yarn install
     - name: Install dependencies
       working-directory: ./frontend    
       run: yarn install
