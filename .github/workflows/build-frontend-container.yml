@@ -37,9 +37,6 @@ jobs:
     - name: Install dependencies
       working-directory: ./frontend    
       run: yarn install
-    - name: Install dependencies
-      working-directory: ./frontend    
-      run: yarn install
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
