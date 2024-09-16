@@ -10,12 +10,17 @@ function App() {
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
-      if (selectedFile.type !== 'text/plain') {
-        setErrorMessage('Nur .txt Dateien sind erlaubt.');
+      const allowedTypes = ['text/plain', 'text/csv', 'application/vnd.ms-excel'];
+      const allowedExtensions = ['.txt', '.csv'];
+
+      const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
+
+      if (!allowedExtensions.includes('.' + fileExtension)) {
+        setErrorMessage('Nur .txt oder .csv Dateien sind erlaubt.');
         return;
       }
-      if (selectedFile.size > 300 * 1024) {
-        setErrorMessage('Die Datei darf maximal 300 KB groß sein.');
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        setErrorMessage('Die Datei darf maximal 10 MB groß sein.');
         return;
       }
       setFile(selectedFile);
@@ -50,7 +55,7 @@ function App() {
       let filename = 'Etiketten.pdf';
       if (contentDisposition) {
         const matches = contentDisposition.match(/filename="(.+)"/);
-        if (matches.length > 1) {
+        if (matches && matches.length > 1) {
           filename = matches[1];
         }
       }
@@ -67,7 +72,11 @@ function App() {
       document.getElementById('file-input').value = '';
     } catch (error) {
       console.error('Error uploading file:', error);
-      setErrorMessage('Fehler beim Hochladen der Datei.');
+      if (error.response && error.response.data && error.response.data.error) {
+        setErrorMessage(error.response.data.error);
+      } else {
+        setErrorMessage('Fehler beim Hochladen der Datei.');
+      }
     }
   };
 
@@ -86,12 +95,16 @@ function App() {
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       const selectedFile = files[0];
-      if (selectedFile.type !== 'text/plain') {
-        setErrorMessage('Nur .txt Dateien sind erlaubt.');
+      const allowedExtensions = ['.txt', '.csv'];
+
+      const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
+
+      if (!allowedExtensions.includes('.' + fileExtension)) {
+        setErrorMessage('Nur .txt oder .csv Dateien sind erlaubt.');
         return;
       }
-      if (selectedFile.size > 300 * 1024) {
-        setErrorMessage('Die Datei darf maximal 300 KB groß sein.');
+      if (selectedFile.size > 10 * 1024 * 1024) {
+        setErrorMessage('Die Datei darf maximal 10 MB groß sein.');
         return;
       }
       setFile(selectedFile);
@@ -114,7 +127,7 @@ function App() {
           </p>
         </section>
         <section className="upload-section">
-          <h2>Termine (TAB).txt - Datei hochladen</h2>
+          <h2>Termine (TAB).txt oder .csv Datei hochladen</h2>
           {errorMessage && <p className="error-message">{errorMessage}</p>}
           <form id="upload-form" method="post" onSubmit={handleUpload}>
             <div 
@@ -125,7 +138,7 @@ function App() {
               onDragLeave={handleDragLeave} 
               onDrop={handleDrop}
             >
-              {file ? `Selected file: ${file.name}` : 'Ziehen Sie die TXT-Datei hierher oder klicken Sie, um sie hochzuladen'}
+              {file ? `Ausgewählte Datei: ${file.name}` : 'Ziehen Sie die TXT- oder CSV-Datei hierher oder klicken Sie, um sie hochzuladen'}
               <input type="file" name="file" id="file-input" style={{ display: 'none' }} onChange={handleFileChange} />
             </div>
             <button type="submit">Etiketten erstellen</button>

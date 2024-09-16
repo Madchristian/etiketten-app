@@ -33,7 +33,7 @@ async def upload_file(file: UploadFile = File(...)):
 
         # Maximal erlaubte Dateigröße und erlaubte Dateierweiterungen
         MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
-        allowed_extensions = ['.csv', '.xlsx']  # Erlaubte Dateitypen
+        allowed_extensions = ['.csv', '.txt']  # Erlaubte Dateitypen
 
         # Dateierweiterung überprüfen
         file_extension = os.path.splitext(file.filename)[1].lower()
@@ -41,7 +41,7 @@ async def upload_file(file: UploadFile = File(...)):
             logger.error("Ungültiger Dateityp hochgeladen.")
             raise HTTPException(
                 status_code=400,
-                detail="Ungültiger Dateityp. Bitte laden Sie eine CSV- oder Excel-Datei hoch."
+                detail="Ungültiger Dateityp. Bitte laden Sie eine CSV- oder TXT-Datei hoch."
             )
 
         # Dateiinhalt in den Speicher lesen
@@ -60,9 +60,9 @@ async def upload_file(file: UploadFile = File(...)):
         try:
             file_bytes = BytesIO(file_content)
             if file_extension == '.csv':
+                df = pd.read_csv(file_bytes)
+            elif file_extension == '.txt':
                 df = pd.read_csv(file_bytes, sep='\t')
-            elif file_extension == '.xlsx':
-                df = pd.read_excel(file_bytes)
             else:
                 raise HTTPException(
                     status_code=400,
@@ -90,7 +90,7 @@ async def upload_file(file: UploadFile = File(...)):
             logger.error(f"Fehler beim Lesen der Datei: {e}")
             raise HTTPException(
                 status_code=400,
-                detail="Die Datei konnte nicht gelesen werden. Stellen Sie sicher, dass es sich um eine gültige CSV- oder Excel-Datei handelt."
+                detail="Die Datei konnte nicht gelesen werden. Stellen Sie sicher, dass es sich um eine gültige CSV- oder TAB-getrennte TXT-Datei handelt."
             )
 
         # Datei speichern
