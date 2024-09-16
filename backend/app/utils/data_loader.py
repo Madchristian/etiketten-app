@@ -33,6 +33,7 @@ class DataLoader:
                 logger.info("Daten nach dem Filtern:")
                 logger.info(df.head())
 
+                # Daten in die Datenbank schreiben
                 df.to_sql('etiketten', conn, if_exists='append', index=False)
                 self._log_table_structure(cursor)
         except Exception as e:
@@ -60,7 +61,7 @@ class DataLoader:
             )
         ''')
         
-        # Check if the column 'Schluesselwort' exists, if not, add it
+        # Überprüfen, ob die Spalte 'Schluesselwort' existiert
         cursor.execute("PRAGMA table_info(etiketten)")
         columns = [col[1] for col in cursor.fetchall()]
         if 'Schluesselwort' not in columns:
@@ -83,9 +84,16 @@ class DataLoader:
             'Terminstatus': 'Terminstatus',
             'Modell': 'Modell'
         }
+        
+        # CSV-Datei laden
         df = pd.read_csv(file_path, sep='\t', usecols=columns.keys())
+
+        # Fehlende Werte durch leere Strings ersetzen
+        df = df.fillna('')
+
         df.rename(columns=columns, inplace=True)
         df['upload_id'] = upload_id
+        
         logger.info("DataFrame Spalten nach dem Laden:")
         logger.info(df.columns)
         logger.info("Erste Zeilen der DataFrame:")
