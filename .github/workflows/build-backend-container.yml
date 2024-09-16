@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: srv-prod-7
     steps:
     - name: Checkout
       uses: actions/checkout@v4
